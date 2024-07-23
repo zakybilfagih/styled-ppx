@@ -655,8 +655,7 @@ let margin =
       fun
       | `Auto => variant_to_expression(~loc, `Auto)
       | `Extended_length(l) => render_extended_length(~loc, l)
-      | `Extended_percentage(p) => render_extended_percentage(~loc, p)
-      | `Interpolation(name) => render_variable(~loc, name),
+      | `Extended_percentage(p) => render_extended_percentage(~loc, p),
     (~loc) =>
       fun
       | [all] => [[%expr CSS.margin([%e all])]]
@@ -1856,6 +1855,7 @@ let render_line_width = (~loc, value: Types.line_width) =>
   | `Thick => [%expr `thick]
   | `Medium => [%expr `medium]
   | `Thin => [%expr `thin]
+  | `Interpolation(name) => render_variable(~loc, name)
   };
 
 let border_top_width =
@@ -1895,11 +1895,6 @@ let border_width =
       | [w] => render_line_width(~loc, w)
       | _ => raise(Unsupported_feature),
   );
-
-let render_line_width_interp = (~loc) =>
-  fun
-  | `Line_width(lw) => render_line_width(~loc, lw)
-  | `Interpolation(name) => render_variable(~loc, name);
 
 let render_border_style_interp = (~loc) =>
   fun
@@ -1946,7 +1941,7 @@ let render_border = (~loc, ~direction: borderDirection, border) => {
     [
       [%expr
         [%e borderFn](
-          [%e render_line_width_interp(~loc, width)],
+          [%e render_option(~loc, render_line_width, width)],
           [%e render_border_style_interp(~loc, style)],
           [%e render_color_interp(~loc, color)],
         )
@@ -3174,20 +3169,16 @@ let transition =
     (~loc) => [%expr CSS.transitionList],
     (~loc) =>
       fun
-      | `Interpolation(v) => render_variable(~loc, v)
-      | `Xor(transitions) =>
-        switch (transitions) {
-        | [] => raise(Invalid_value("expected at least one argument"))
-        | transitions =>
-          transitions
-          |> List.map(
-               fun
-               | `Single_transition(x) => render_single_transition(~loc, x)
-               | `Single_transition_no_interp(x) =>
-                 render_single_transition_no_interp(~loc, x),
-             )
-          |> Builder.pexp_array(~loc)
-        },
+      | [] => raise(Invalid_value("expected at least one argument"))
+      | transitions =>
+        transitions
+        |> List.map(
+             fun
+             | `Single_transition(x) => render_single_transition(~loc, x)
+             | `Single_transition_no_interp(x) =>
+               render_single_transition_no_interp(~loc, x),
+           )
+        |> Builder.pexp_array(~loc),
   );
 
 let render_keyframes_name = (~loc) =>
@@ -3692,7 +3683,7 @@ let render_line_names = (~loc, value: Types.line_names) => {
   line_names
   |> String.concat(" ")
   |> Printf.sprintf("[%s]")
-  |> (name => [[%expr `name([%e render_string(~loc, name)])]]);
+  |> (name => [[%expr `lineNames([%e render_string(~loc, name)])]]);
 };
 
 let render_maybe_line_names = (~loc, value) => {
@@ -3899,13 +3890,15 @@ let grid_template_columns =
     (~loc) => [%expr CSS.gridTemplateColumns],
     (~loc, value: Types.property_grid_template_columns) =>
       switch (value) {
-      | `None => [%expr [|`none|]]
+      | `None => [%expr `none]
       | `Interpolation(v) => render_variable(~loc, v)
       | `Track_list(track_list, line_names) =>
-        render_track_list(~loc, track_list, line_names)
-      | `Auto_track_list(list) => render_auto_track_list(~loc, list)
-      | `Static((), None) => [%expr [|`subgrid|]]
-      | `Static((), Some(subgrid)) => render_subgrid(~loc, subgrid)
+        [%expr `value([%e render_track_list(~loc, track_list, line_names)])]
+      | `Auto_track_list(list) =>
+        [%expr `value([%e render_auto_track_list(~loc, list)])]
+      | `Static((), None) => [%expr `value([|`subgrid|])]
+      | `Static((), Some(subgrid)) =>
+        [%expr `value([%e render_subgrid(~loc, subgrid)])]
       },
   );
 
@@ -3915,13 +3908,15 @@ let grid_template_rows =
     (~loc) => [%expr CSS.gridTemplateRows],
     (~loc, value: Types.property_grid_template_rows) =>
       switch (value) {
-      | `None => [%expr [|`none|]]
+      | `None => [%expr `none]
       | `Interpolation(v) => render_variable(~loc, v)
       | `Track_list(track_list, line_names) =>
-        render_track_list(~loc, track_list, line_names)
-      | `Auto_track_list(list) => render_auto_track_list(~loc, list)
-      | `Static((), None) => [%expr [|`subgrid|]]
-      | `Static((), Some(subgrid)) => render_subgrid(~loc, subgrid)
+        [%expr `value([%e render_track_list(~loc, track_list, line_names)])]
+      | `Auto_track_list(list) =>
+        [%expr `value([%e render_auto_track_list(~loc, list)])]
+      | `Static((), None) => [%expr `value([|`subgrid|])]
+      | `Static((), Some(subgrid)) =>
+        [%expr `value([%e render_subgrid(~loc, subgrid)])]
       },
   );
 

@@ -13,6 +13,11 @@ If this test fail means that the module is not in sync with the ppx
   > EOF
 
   $ dune build
+  File "input.re", line 17, characters 30-63:
+  Error: This expression has type [> `name of string ]
+         but an expression was expected of type Css_types.Track.t
+         The second variant type does not allow tag(s) `name
+  [1]
 
   $ dune describe pp ./input.re.ml | refmt --parse ml --print re
   [@ocaml.ppx.context
@@ -35,94 +40,114 @@ If this test fail means that the module is not in sync with the ppx
   ];
   CSS.display(`grid);
   CSS.display(`inlineGrid);
-  CSS.gridTemplateColumns([|`none|]);
-  CSS.gridTemplateColumns([|`auto|]);
-  CSS.gridTemplateColumns([|`pxFloat(100.)|]);
-  CSS.gridTemplateColumns([|`fr(1.)|]);
-  CSS.gridTemplateColumns([|`pxFloat(100.), `fr(1.), `auto|]);
-  CSS.gridTemplateColumns([|
-    `repeat((`num(2), [|`pxFloat(100.), `fr(1.)|])),
-  |]);
-  CSS.gridTemplateColumns([|
-    `repeat((
-      `num(4),
-      [|
-        `pxFloat(10.),
-        `name({js|[col-start]|js}),
-        `pxFloat(250.),
-        `name({js|[col-end]|js}),
-      |],
-    )),
-    `pxFloat(10.),
-  |]);
-  CSS.gridTemplateColumns([|
-    `pxFloat(100.),
-    `fr(1.),
-    `maxContent,
-    `minmax((`minContent, `fr(1.))),
-  |]);
-  CSS.gridTemplateColumns([|
-    `repeat((`autoFill, [|`minmax((`ch(25.), `fr(1.)))|])),
-  |]);
-  CSS.gridTemplateColumns([|
-    `name({js|[col-end]|js}),
-    `pxFloat(10.),
-    `name({js|[col-start]|js}),
-    `pxFloat(250.),
-  |]);
-  CSS.gridTemplateColumns([|
-    `name({js|[last]|js}),
-    `name({js|[first nav-start]|js}),
-    `pxFloat(150.),
-    `name({js|[main-start]|js}),
-    `fr(1.),
-  |]);
-  CSS.gridTemplateColumns([|
-    `pxFloat(10.),
-    `name({js|[col-start]|js}),
-    `pxFloat(250.),
-    `name({js|[col-end]|js}),
-    `pxFloat(10.),
-    `name({js|[col-start]|js}),
-    `pxFloat(250.),
-    `name({js|[col-end]|js}),
-    `pxFloat(10.),
-  |]);
-  CSS.gridTemplateColumns([|
-    `name({js|[a]|js}),
-    `auto,
-    `name({js|[b]|js}),
-    `minmax((`minContent, `fr(1.))),
-    `name({js|[b c d]|js}),
-    `repeat((`num(2), [|`name({js|[e]|js}), `pxFloat(40.)|])),
-    `repeat((`num(5), [|`auto|])),
-  |]);
-  CSS.gridTemplateColumns([|
-    `pxFloat(200.),
-    `repeat((`autoFill, [|`pxFloat(100.)|])),
-    `pxFloat(300.),
-  |]);
-  CSS.gridTemplateColumns([|
-    `minmax((`pxFloat(100.), `maxContent)),
-    `repeat((`autoFill, [|`pxFloat(200.)|])),
-    `percent(20.),
-  |]);
-  CSS.gridTemplateColumns([|
-    `name({js|[linename1]|js}),
-    `pxFloat(100.),
-    `name({js|[linename2]|js}),
-    `repeat((
-      `autoFit,
-      [|`name({js|[linename3 linename4]|js}), `pxFloat(300.)|],
-    )),
-    `pxFloat(100.),
-  |]);
-  CSS.gridTemplateColumns([|
-    `name({js|[linename1 linename2]|js}),
-    `pxFloat(100.),
-    `repeat((`autoFit, [|`name({js|[linename1]|js}), `pxFloat(300.)|])),
-    `name({js|[linename3]|js}),
-  |]);
+  CSS.gridTemplateColumns(`none);
+  CSS.gridTemplateColumns(`value([|`auto|]));
+  CSS.gridTemplateColumns(`value([|`pxFloat(100.)|]));
+  CSS.gridTemplateColumns(`value([|`fr(1.)|]));
+  CSS.gridTemplateColumns(`value([|`pxFloat(100.), `fr(1.), `auto|]));
+  CSS.gridTemplateColumns(
+    `value([|`repeat((`num(2), [|`pxFloat(100.), `fr(1.)|]))|]),
+  );
+  CSS.gridTemplateColumns(
+    `value([|
+      `repeat((
+        `num(4),
+        [|
+          `pxFloat(10.),
+          `name({js|[col-start]|js}),
+          `pxFloat(250.),
+          `name({js|[col-end]|js}),
+        |],
+      )),
+      `pxFloat(10.),
+    |]),
+  );
+  CSS.gridTemplateColumns(
+    `value([|
+      `pxFloat(100.),
+      `fr(1.),
+      `maxContent,
+      `minmax((`minContent, `fr(1.))),
+    |]),
+  );
+  CSS.gridTemplateColumns(
+    `value([|`repeat((`autoFill, [|`minmax((`ch(25.), `fr(1.)))|]))|]),
+  );
+  CSS.gridTemplateColumns(
+    `value([|
+      `name({js|[col-end]|js}),
+      `pxFloat(10.),
+      `name({js|[col-start]|js}),
+      `pxFloat(250.),
+    |]),
+  );
+  CSS.gridTemplateColumns(
+    `value([|
+      `name({js|[last]|js}),
+      `name({js|[first nav-start]|js}),
+      `pxFloat(150.),
+      `name({js|[main-start]|js}),
+      `fr(1.),
+    |]),
+  );
+  CSS.gridTemplateColumns(
+    `value([|
+      `pxFloat(10.),
+      `name({js|[col-start]|js}),
+      `pxFloat(250.),
+      `name({js|[col-end]|js}),
+      `pxFloat(10.),
+      `name({js|[col-start]|js}),
+      `pxFloat(250.),
+      `name({js|[col-end]|js}),
+      `pxFloat(10.),
+    |]),
+  );
+  CSS.gridTemplateColumns(
+    `value([|
+      `name({js|[a]|js}),
+      `auto,
+      `name({js|[b]|js}),
+      `minmax((`minContent, `fr(1.))),
+      `name({js|[b c d]|js}),
+      `repeat((`num(2), [|`name({js|[e]|js}), `pxFloat(40.)|])),
+      `repeat((`num(5), [|`auto|])),
+    |]),
+  );
+  CSS.gridTemplateColumns(
+    `value([|
+      `pxFloat(200.),
+      `repeat((`autoFill, [|`pxFloat(100.)|])),
+      `pxFloat(300.),
+    |]),
+  );
+  CSS.gridTemplateColumns(
+    `value([|
+      `minmax((`pxFloat(100.), `maxContent)),
+      `repeat((`autoFill, [|`pxFloat(200.)|])),
+      `percent(20.),
+    |]),
+  );
+  CSS.gridTemplateColumns(
+    `value([|
+      `name({js|[linename1]|js}),
+      `pxFloat(100.),
+      `name({js|[linename2]|js}),
+      `repeat((
+        `autoFit,
+        [|`name({js|[linename3 linename4]|js}), `pxFloat(300.)|],
+      )),
+      `pxFloat(100.),
+    |]),
+  );
+  CSS.gridTemplateColumns(
+    `value([|
+      `name({js|[linename1 linename2]|js}),
+      `pxFloat(100.),
+      `repeat((`autoFit, [|`name({js|[linename1]|js}), `pxFloat(300.)|])),
+      `name({js|[linename3]|js}),
+    |]),
+  );
   let value = [|
     `repeat((
       `num(4),
@@ -136,35 +161,41 @@ If this test fail means that the module is not in sync with the ppx
     `pxFloat(10.),
   |];
   (CSS.gridTemplateColumns(value): CSS.rule);
-  CSS.gridTemplateRows([|`none|]);
-  CSS.gridTemplateRows([|`auto|]);
-  CSS.gridTemplateRows([|`pxFloat(100.)|]);
-  CSS.gridTemplateRows([|`fr(1.)|]);
-  CSS.gridTemplateRows([|`pxFloat(100.), `fr(1.), `auto|]);
-  CSS.gridTemplateRows([|
-    `repeat((`num(2), [|`pxFloat(100.), `fr(1.)|])),
-  |]);
-  CSS.gridTemplateRows([|
-    `pxFloat(100.),
-    `fr(1.),
-    `maxContent,
-    `minmax((`minContent, `fr(1.))),
-  |]);
-  CSS.gridTemplateRows([|
-    `name({js|[row-end]|js}),
-    `pxFloat(10.),
-    `name({js|[row-start]|js}),
-    `pxFloat(250.),
-  |]);
-  CSS.gridTemplateRows([|
-    `name({js|[last]|js}),
-    `name({js|[first header-start]|js}),
-    `pxFloat(50.),
-    `name({js|[main-start]|js}),
-    `fr(1.),
-    `name({js|[footer-start]|js}),
-    `pxFloat(50.),
-  |]);
+  CSS.gridTemplateRows(`none);
+  CSS.gridTemplateRows(`value([|`auto|]));
+  CSS.gridTemplateRows(`value([|`pxFloat(100.)|]));
+  CSS.gridTemplateRows(`value([|`fr(1.)|]));
+  CSS.gridTemplateRows(`value([|`pxFloat(100.), `fr(1.), `auto|]));
+  CSS.gridTemplateRows(
+    `value([|`repeat((`num(2), [|`pxFloat(100.), `fr(1.)|]))|]),
+  );
+  CSS.gridTemplateRows(
+    `value([|
+      `pxFloat(100.),
+      `fr(1.),
+      `maxContent,
+      `minmax((`minContent, `fr(1.))),
+    |]),
+  );
+  CSS.gridTemplateRows(
+    `value([|
+      `name({js|[row-end]|js}),
+      `pxFloat(10.),
+      `name({js|[row-start]|js}),
+      `pxFloat(250.),
+    |]),
+  );
+  CSS.gridTemplateRows(
+    `value([|
+      `name({js|[last]|js}),
+      `name({js|[first header-start]|js}),
+      `pxFloat(50.),
+      `name({js|[main-start]|js}),
+      `fr(1.),
+      `name({js|[footer-start]|js}),
+      `pxFloat(50.),
+    |]),
+  );
   CSS.unsafe({js|gridTemplateAreas|js}, {js|none|js});
   CSS.unsafe({js|gridTemplateAreas|js}, {js|'articles'|js});
   CSS.unsafe({js|gridTemplateAreas|js}, {js|'head head'|js});
@@ -235,71 +266,89 @@ If this test fail means that the module is not in sync with the ppx
   CSS.unsafe({js|gridGap|js}, {js|0 1em|js});
   CSS.gridGap(`em(1.));
   CSS.unsafe({js|gridGap|js}, {js|1em 1em|js});
-  CSS.gridTemplateColumns([|`subgrid|]);
-  CSS.gridTemplateColumns([|`subgrid, `name({js|[sub-a]|js})|]);
-  CSS.gridTemplateColumns([|
-    `subgrid,
-    `name({js|[sub-a]|js}),
-    `name({js|[sub-b]|js}),
-  |]);
-  CSS.gridTemplateColumns([|
-    `subgrid,
-    `repeat((`num(1), [|`name({js|[sub-a]|js})|])),
-  |]);
-  CSS.gridTemplateColumns([|
-    `subgrid,
-    `repeat((`num(2), [|`name({js|[sub-a]|js}), `name({js|[sub-b]|js})|])),
-    `name({js|[sub-c]|js}),
-  |]);
-  CSS.gridTemplateColumns([|
-    `subgrid,
-    `repeat((`autoFill, [|`name({js|[sub-a]|js}), `name({js|[sub-b]|js})|])),
-  |]);
-  CSS.gridTemplateColumns([|
-    `subgrid,
-    `name({js|[sub-a]|js}),
-    `repeat((
-      `autoFill,
-      [|
-        `name({js|[sub-b]|js}),
-        `name({js|[sub-c]|js}),
-        `name({js|[sub-d]|js}),
-      |],
-    )),
-    `name({js|[sub-e]|js}),
-    `repeat((`num(1), [|`name({js|[sub-g]|js})|])),
-  |]);
-  CSS.gridTemplateRows([|`subgrid|]);
-  CSS.gridTemplateRows([|`subgrid, `name({js|[sub-a]|js})|]);
-  CSS.gridTemplateRows([|
-    `subgrid,
-    `name({js|[sub-a]|js}),
-    `name({js|[sub-b]|js}),
-  |]);
-  CSS.gridTemplateRows([|
-    `subgrid,
-    `repeat((`num(1), [|`name({js|[sub-a]|js})|])),
-  |]);
-  CSS.gridTemplateRows([|
-    `subgrid,
-    `repeat((`num(2), [|`name({js|[sub-a]|js}), `name({js|[sub-b]|js})|])),
-    `name({js|[sub-c]|js}),
-  |]);
-  CSS.gridTemplateRows([|
-    `subgrid,
-    `repeat((`autoFill, [|`name({js|[sub-a]|js}), `name({js|[sub-b]|js})|])),
-  |]);
-  CSS.gridTemplateRows([|
-    `subgrid,
-    `name({js|[sub-a]|js}),
-    `repeat((
-      `autoFill,
-      [|
-        `name({js|[sub-b]|js}),
-        `name({js|[sub-c]|js}),
-        `name({js|[sub-d]|js}),
-      |],
-    )),
-    `name({js|[sub-e]|js}),
-    `repeat((`num(1), [|`name({js|[sub-g]|js})|])),
-  |]);
+  CSS.gridTemplateColumns(`value([|`subgrid|]));
+  CSS.gridTemplateColumns(`value([|`subgrid, `name({js|[sub-a]|js})|]));
+  CSS.gridTemplateColumns(
+    `value([|`subgrid, `name({js|[sub-a]|js}), `name({js|[sub-b]|js})|]),
+  );
+  CSS.gridTemplateColumns(
+    `value([|`subgrid, `repeat((`num(1), [|`name({js|[sub-a]|js})|]))|]),
+  );
+  CSS.gridTemplateColumns(
+    `value([|
+      `subgrid,
+      `repeat((
+        `num(2),
+        [|`name({js|[sub-a]|js}), `name({js|[sub-b]|js})|],
+      )),
+      `name({js|[sub-c]|js}),
+    |]),
+  );
+  CSS.gridTemplateColumns(
+    `value([|
+      `subgrid,
+      `repeat((
+        `autoFill,
+        [|`name({js|[sub-a]|js}), `name({js|[sub-b]|js})|],
+      )),
+    |]),
+  );
+  CSS.gridTemplateColumns(
+    `value([|
+      `subgrid,
+      `name({js|[sub-a]|js}),
+      `repeat((
+        `autoFill,
+        [|
+          `name({js|[sub-b]|js}),
+          `name({js|[sub-c]|js}),
+          `name({js|[sub-d]|js}),
+        |],
+      )),
+      `name({js|[sub-e]|js}),
+      `repeat((`num(1), [|`name({js|[sub-g]|js})|])),
+    |]),
+  );
+  CSS.gridTemplateRows(`value([|`subgrid|]));
+  CSS.gridTemplateRows(`value([|`subgrid, `name({js|[sub-a]|js})|]));
+  CSS.gridTemplateRows(
+    `value([|`subgrid, `name({js|[sub-a]|js}), `name({js|[sub-b]|js})|]),
+  );
+  CSS.gridTemplateRows(
+    `value([|`subgrid, `repeat((`num(1), [|`name({js|[sub-a]|js})|]))|]),
+  );
+  CSS.gridTemplateRows(
+    `value([|
+      `subgrid,
+      `repeat((
+        `num(2),
+        [|`name({js|[sub-a]|js}), `name({js|[sub-b]|js})|],
+      )),
+      `name({js|[sub-c]|js}),
+    |]),
+  );
+  CSS.gridTemplateRows(
+    `value([|
+      `subgrid,
+      `repeat((
+        `autoFill,
+        [|`name({js|[sub-a]|js}), `name({js|[sub-b]|js})|],
+      )),
+    |]),
+  );
+  CSS.gridTemplateRows(
+    `value([|
+      `subgrid,
+      `name({js|[sub-a]|js}),
+      `repeat((
+        `autoFill,
+        [|
+          `name({js|[sub-b]|js}),
+          `name({js|[sub-c]|js}),
+          `name({js|[sub-d]|js}),
+        |],
+      )),
+      `name({js|[sub-e]|js}),
+      `repeat((`num(1), [|`name({js|[sub-g]|js})|])),
+    |]),
+  );

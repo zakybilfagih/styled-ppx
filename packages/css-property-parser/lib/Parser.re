@@ -138,7 +138,7 @@ and cf_mixing_image = [%value.rec "[ <extended-percentage> ]? && <image>"]
 and class_selector = [%value.rec "'.' <ident-token>"]
 and clip_source = [%value.rec "<url>"]
 and color = [%value.rec
-  "<rgb()> | <rgba()> | <hsl()> | <hsla()> | <hex-color> | <named-color> | 'currentColor' | <deprecated-system-color> | <interpolation> | <var()> | <color-mix()>"
+  "<rgb()> | <rgba()> | <hsl()> | <hsla()> | <hex-color> | <named-color> | 'currentColor' | <deprecated-system-color> | <var()> | <color-mix()> | <interpolation>"
 ]
 and color_stop = [%value.rec "<color-stop-length> | <color-stop-angle>"]
 and color_stop_angle = [%value.rec "[ <extended-angle> ]{1,2}"]
@@ -469,9 +469,9 @@ and leader_type = [%value.rec "'dotted' | 'solid' | 'space' | <string>"]
 and left = [%value.rec "<extended-length> | 'auto'"]
 and line_name_list = [%value.rec "[ <line-names> | <name-repeat> ]+"]
 and line_style = [%value.rec
-  "'none' | 'hidden' | 'dotted' | 'dashed' | 'solid' | 'double' | 'groove' | 'ridge' | 'inset' | 'outset'"
+  "'none' | 'hidden' | 'dotted' | 'dashed' | 'solid' | 'double' | 'groove' | 'ridge' | 'inset' | 'outset' | <interpolation>"
 ]
-and line_width = [%value.rec "<extended-length> | 'thin' | 'medium' | 'thick'"]
+and line_width = [%value.rec "<extended-length> | 'thin' | 'medium' | 'thick' | <interpolation>"]
 and linear_color_hint = [%value.rec
   "<extended-length> | <extended-percentage>"
 ]
@@ -809,10 +809,10 @@ and property_align_content = [%value.rec
   "'normal' | <baseline-position> | <content-distribution> | [ <overflow-position> ]? <content-position>"
 ]
 and property_align_items = [%value.rec
-  "'normal' | 'stretch' | <baseline-position> | [ <overflow-position> ]? <self-position> | <interpolation>"
+  "'normal' | 'stretch' | <baseline-position> | [ <overflow-position> ]? <self-position>"
 ]
 and property_align_self = [%value.rec
-  "'auto' | 'normal' | 'stretch' | <baseline-position> | [ <overflow-position> ]? <self-position> | <interpolation>"
+  "'auto' | 'normal' | 'stretch' | <baseline-position> | [ <overflow-position> ]? <self-position>"
 ]
 and property_alignment_baseline = [%value.rec
   "'auto' | 'baseline' | 'before-edge' | 'text-before-edge' | 'middle' | 'central' | 'after-edge' | 'text-after-edge' | 'ideographic' | 'alphabetic' | 'hanging' | 'mathematical'"
@@ -831,7 +831,7 @@ and property_animation_iteration_count = [%value.rec
   "[ <single-animation-iteration-count> ]#"
 ]
 and property_animation_name = [%value.rec
-  "[ <keyframes-name> | 'none' | <interpolation> ]#"
+  "[ <keyframes-name> | 'none' ]#"
 ]
 and property_animation_play_state = [%value.rec
   "[ <single-animation-play-state> ]#"
@@ -845,7 +845,7 @@ and property_azimuth = [%value.rec
   "<extended-angle> | [ 'left-side' | 'far-left' | 'left' | 'center-left' | 'center' | 'center-right' | 'right' | 'far-right' | 'right-side' ] || 'behind' | 'leftwards' | 'rightwards'"
 ]
 and property_backdrop_filter = [%value.rec
-  "'none' | <interpolation> | <filter-function-list>"
+  "'none' | <filter-function-list>"
 ]
 and property_backface_visibility = [%value.rec "'visible' | 'hidden'"]
 and property_background = [%value.rec "[ <bg-layer> ',' ]* <final-bg-layer>"]
@@ -870,9 +870,7 @@ and property_baseline_shift = [%value.rec
 and property_behavior = [%value.rec "[ <url> ]+"]
 and property_block_overflow = [%value.rec "'clip' | 'ellipsis' | <string>"]
 and property_block_size = [%value.rec "<'width'>"]
-and property_border = [%value.rec
-  "'none' | [ <line-width> | <interpolation> ] | [ <line-width> | <interpolation> ] [ <line-style> | <interpolation> ] | [ <line-width> | <interpolation> ] [ <line-style> | <interpolation> ] [ <color> | <interpolation> ]"
-]
+and property_border = [%value.rec "<line-width> || <line-style> || <color>" ]
 and property_border_block = [%value.rec "<'border'>"]
 and property_border_block_color = [%value.rec "[ <'border-top-color'> ]{1,2}"]
 and property_border_block_end = [%value.rec "<'border'>"]
@@ -982,7 +980,7 @@ and property_box_orient = [%value.rec
 ]
 and property_box_pack = [%value.rec "'start' | 'center' | 'end' | 'justify'"]
 and property_box_shadow = [%value.rec
-  "'none' | <interpolation> | [ <shadow> ]#"
+  "'none' | [ <shadow> ]#"
 ]
 and property_box_sizing = [%value.rec "'content-box' | 'border-box'"]
 and property_break_after = [%value.rec
@@ -1030,7 +1028,7 @@ and property_contain = [%value.rec
   "'none' | 'strict' | 'content' | 'size' || 'layout' || 'style' || 'paint'"
 ]
 and property_content = [%value.rec
-  "'normal' | 'none' | <string> | <interpolation> | [ <content-replacement> | <content-list> ] [ '/' <string> ]?"
+  "'normal' | 'none' | <string> | [ <content-replacement> | <content-list> ] [ '/' <string> ]?"
 ]
 and property_content_visibility = [%value.rec "'visible' | 'hidden' | 'auto'"]
 and property_counter_increment = [%value.rec
@@ -1050,7 +1048,7 @@ and property_cue_before = [%value.rec "<url> [ <decibel> ]? | 'none'"]
    ] */
 /* Removed [ <url> [ <x> <y> ]? ',' ]* */
 and property_cursor = [%value.rec
-  "'auto' | 'default' | 'none' | 'context-menu' | 'help' | 'pointer' | 'progress' | 'wait' | 'cell' | 'crosshair' | 'text' | 'vertical-text' | 'alias' | 'copy' | 'move' | 'no-drop' | 'not-allowed' | 'e-resize' | 'n-resize' | 'ne-resize' | 'nw-resize' | 's-resize' | 'se-resize' | 'sw-resize' | 'w-resize' | 'ew-resize' | 'ns-resize' | 'nesw-resize' | 'nwse-resize' | 'col-resize' | 'row-resize' | 'all-scroll' | 'zoom-in' | 'zoom-out' | 'grab' | 'grabbing' | 'hand' | '-webkit-grab' | '-webkit-grabbing' | '-webkit-zoom-in' | '-webkit-zoom-out' | '-moz-grab' | '-moz-grabbing' | '-moz-zoom-in' | '-moz-zoom-out' | <interpolation>"
+  "'auto' | 'default' | 'none' | 'context-menu' | 'help' | 'pointer' | 'progress' | 'wait' | 'cell' | 'crosshair' | 'text' | 'vertical-text' | 'alias' | 'copy' | 'move' | 'no-drop' | 'not-allowed' | 'e-resize' | 'n-resize' | 'ne-resize' | 'nw-resize' | 's-resize' | 'se-resize' | 'sw-resize' | 'w-resize' | 'ew-resize' | 'ns-resize' | 'nesw-resize' | 'nwse-resize' | 'col-resize' | 'row-resize' | 'all-scroll' | 'zoom-in' | 'zoom-out' | 'grab' | 'grabbing' | 'hand' | '-webkit-grab' | '-webkit-grabbing' | '-webkit-zoom-in' | '-webkit-zoom-out' | '-moz-grab' | '-moz-grabbing' | '-moz-zoom-in' | '-moz-zoom-out'"
 ]
 and property_direction = [%value.rec "'ltr' | 'rtl'"]
 and property_display = [%value.rec
@@ -1064,20 +1062,20 @@ and property_fill = [%value.rec "<paint>"]
 and property_fill_opacity = [%value.rec "<alpha-value>"]
 and property_fill_rule = [%value.rec "'nonzero' | 'evenodd'"]
 and property_filter = [%value.rec
-  "'none' | <interpolation> | <filter-function-list> | <-ms-filter-function-list>"
+  "'none' | <filter-function-list> | <-ms-filter-function-list>"
 ]
 and property_flex = [%value.rec
-  "'none' | [<'flex-grow'> [ <'flex-shrink'> ]? || <'flex-basis'>] | <interpolation>"
+  "'none' | [<'flex-grow'> [ <'flex-shrink'> ]? || <'flex-basis'>]"
 ]
 and property_flex_basis = [%value.rec
-  "'content' | <'width'> | <interpolation>"
+  "'content' | <'width'>"
 ]
 and property_flex_direction = [%value.rec
   "'row' | 'row-reverse' | 'column' | 'column-reverse'"
 ]
 and property_flex_flow = [%value.rec "<'flex-direction'> || <'flex-wrap'>"]
-and property_flex_grow = [%value.rec "<number> | <interpolation>"]
-and property_flex_shrink = [%value.rec "<number> | <interpolation>"]
+and property_flex_grow = [%value.rec "<number>"]
+and property_flex_shrink = [%value.rec "<number>"]
 and property_flex_wrap = [%value.rec "'nowrap' | 'wrap' | 'wrap-reverse'"]
 and property_float = [%value.rec
   "'left' | 'right' | 'none' | 'inline-start' | 'inline-end'"
@@ -1085,10 +1083,7 @@ and property_float = [%value.rec
 and property_font = [%value.rec
   "[ <'font-style'> || <font-variant-css21> || <'font-weight'> || <'font-stretch'> ]? <'font-size'> [ '/' <'line-height'> ]? <'font-family'> | 'caption' | 'icon' | 'menu' | 'message-box' | 'small-caption' | 'status-bar'"
 ]
-and font_families = [%value.rec
-  "[ <family-name> | <generic-family> | <interpolation> ]#"
-]
-and property_font_family = [%value.rec "<font_families> | <interpolation>"]
+and property_font_family = [%value.rec "[ <family-name> | <generic-family> ]#"]
 and property_font_feature_settings = [%value.rec
   "'normal' | [ <feature-tag-value> ]#"
 ]
@@ -1105,7 +1100,7 @@ and property_font_smooth = [%value.rec
 ]
 and property_font_stretch = [%value.rec "<font-stretch-absolute>"]
 and property_font_style = [%value.rec
-  "'normal' | 'italic' | 'oblique' | <interpolation> | [ 'oblique' <extended-angle> ]?"
+  "'normal' | 'italic' | 'oblique' |  [ 'oblique' <extended-angle> ]?"
 ]
 and property_font_synthesis = [%value.rec "'none' | 'weight' || 'style'"]
 and property_font_synthesis_weight = [%value.rec "'auto' | 'none'"]
@@ -1138,7 +1133,7 @@ and property_font_variant_emoji = [%value.rec
   "'normal' | 'text' | 'emoji' | 'unicode'"
 ]
 and property_font_weight = [%value.rec
-  "<font-weight-absolute> | 'bolder' | 'lighter' | <interpolation>"
+  "<font-weight-absolute> | 'bolder' | 'lighter'"
 ]
 and property_gap = [%value.rec "<'row-gap'> [ <'column-gap'> ]?"]
 and property_glyph_orientation_horizontal = [%value.rec "<extended-angle>"]
@@ -1170,10 +1165,10 @@ and property_grid_template = [%value.rec
 ]
 and property_grid_template_areas = [%value.rec "'none' | [ <string> ]+"]
 and property_grid_template_columns = [%value.rec
-  "'none' | <track-list> | <auto-track-list> | 'subgrid' [ <line-name-list> ]? | <interpolation>"
+  "'none' | <track-list> | <auto-track-list> | 'subgrid' [ <line-name-list> ]?"
 ]
 and property_grid_template_rows = [%value.rec
-  "'none' | <track-list> | <auto-track-list> | 'subgrid' [ <line-name-list> ]? | <interpolation>"
+  "'none' | <track-list> | <auto-track-list> | 'subgrid' [ <line-name-list> ]?"
 ]
 and property_hanging_punctuation = [%value.rec
   "'none' | 'first' || [ 'force-end' | 'allow-end' ] || 'last'"
@@ -1245,7 +1240,7 @@ and property_letter_spacing = [%value.rec
   "'normal' | <extended-length> | <extended-percentage>"
 ]
 and property_line_break = [%value.rec
-  "'auto' | 'loose' | 'normal' | 'strict' | 'anywhere' | <interpolation>"
+  "'auto' | 'loose' | 'normal' | 'strict' | 'anywhere'"
 ]
 and property_line_clamp = [%value.rec "'none' | <integer>"]
 and property_line_height = [%value.rec
@@ -1261,7 +1256,7 @@ and property_list_style_type = [%value.rec
   "<counter-style> | <string> | 'none'"
 ]
 and property_margin = [%value.rec
-  "[ <extended-length> | <extended-percentage> | 'auto' | <interpolation> ]{1,4}"
+  "[ <extended-length> | <extended-percentage> | 'auto']{1,4}"
 ]
 and property_margin_block = [%value.rec "[ <'margin-left'> ]{1,2}"]
 and property_margin_block_end = [%value.rec "<'margin-left'>"]
@@ -1723,7 +1718,7 @@ and property_transform_origin = [%value.rec
 ]
 and property_transform_style = [%value.rec "'flat' | 'preserve-3d'"]
 and property_transition = [%value.rec
-  "[ <single-transition> | <single-transition-no-interp> ]# | <interpolation>"
+  "[ <single-transition> | <single-transition-no-interp> ]#"
 ]
 and property_transition_delay = [%value.rec "[ <extended-time> ]#"]
 and property_transition_duration = [%value.rec "[ <extended-time> ]#"]
@@ -1745,7 +1740,7 @@ and property_vertical_align = [%value.rec
   "'baseline' | 'sub' | 'super' | 'text-top' | 'text-bottom' | 'middle' | 'top' | 'bottom' | <extended-percentage> | <extended-length>"
 ]
 and property_visibility = [%value.rec
-  "'visible' | 'hidden' | 'collapse' | <interpolation>"
+  "'visible' | 'hidden' | 'collapse'"
 ]
 and property_voice_balance = [%value.rec
   "<number> | 'left' | 'center' | 'right' | 'leftwards' | 'rightwards'"
@@ -1787,7 +1782,7 @@ and property_word_wrap = [%value.rec "'normal' | 'break-word' | 'anywhere'"]
 and property_writing_mode = [%value.rec
   "'horizontal-tb' | 'vertical-rl' | 'vertical-lr' | 'sideways-rl' | 'sideways-lr' | <svg-writing-mode>"
 ]
-and property_z_index = [%value.rec "'auto' | <integer> | <interpolation>"]
+and property_z_index = [%value.rec "'auto' | <integer>"]
 and property_zoom = [%value.rec
   "'normal' | 'reset' | <number> | <extended-percentage>"
 ]
@@ -1796,10 +1791,10 @@ and property_container = [%value.rec
 ]
 and property_container_name = [%value.rec "<custom-ident>+ | 'none'"]
 and property_container_type = [%value.rec "'normal' | 'size' | 'inline-size'"]
-and property_nav_down = [%value.rec "'auto' | <integer> | <interpolation>"]
-and property_nav_left = [%value.rec "'auto' | <integer> | <interpolation>"]
-and property_nav_right = [%value.rec "'auto' | <integer> | <interpolation>"]
-and property_nav_up = [%value.rec "'auto' | <integer> | <interpolation>"]
+and property_nav_down = [%value.rec "'auto' | <integer>"]
+and property_nav_left = [%value.rec "'auto' | <integer>"]
+and property_nav_right = [%value.rec "'auto' | <integer>"]
+and property_nav_up = [%value.rec "'auto' | <integer>"]
 and pseudo_class_selector = [%value.rec
   "':' <ident-token> | ':' <function-token> <any-value> ')'"
 ]
@@ -1823,7 +1818,7 @@ and shadow = [%value.rec
   "[ 'inset' ]? [ <extended-length> | <interpolation> ]{4} [ <color> | <interpolation> ]?"
 ]
 and shadow_t = [%value.rec
-  "[ <extended-length> | <interpolation> ]{3} [ <color> | <interpolation> ]?"
+  "[ <extended-length> ]{3} [ <color> | <interpolation> ]?"
 ]
 and shape = [%value.rec
   "rect( <top> ',' <right> ',' <bottom> ',' <left> ) | rect( <top> <right> <bottom> <left> )"
@@ -3396,7 +3391,6 @@ let check_map =
       ("shape-radius", check(shape_radius)),
       ("side-or-corner", check(side_or_corner)),
       ("single-animation", check(single_animation)),
-      ("font-families", check(font_families)),
       ("single-animation-direction", check(single_animation_direction)),
       ("single-animation-fill-mode", check(single_animation_fill_mode)),
       (
