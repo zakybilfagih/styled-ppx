@@ -12,6 +12,7 @@
 
 module Color = {
   let text = CSS.hex("444");
+  let background = CSS.hex("FFF");
 };
 let colorTextString = Color.text |> CSS.Types.Color.toString;
 

@@ -183,6 +183,7 @@ let render_css_global_values = (~loc, name, value) => {
 
 let variant_to_expression = (~loc) =>
   fun
+  | `Interpolation(v) => render_variable(~loc, v)
   | `Anywhere => id([%expr `anywhere])
   | `Auto => id([%expr `auto])
   | `Baseline => id([%expr `baseline])
@@ -1039,9 +1040,13 @@ let render_var = (~loc, string) => {
   [%expr `var([%e string])];
 };
 
-let rec render_color = (~loc, value) =>
-  switch ((value: Types.color)) {
+let rec render_color = (~loc, value: Types.color) =>
+  switch (value) {
+  | #Types.color_no_interp as x => render_color_no_interp(~loc, x)
   | `Interpolation(v) => render_variable(~loc, v)
+  }
+and render_color_no_interp = (~loc, value: Types.color_no_interp) => {
+  switch (value) {
   | `Hex_color(hex) => id([%expr `hex([%e render_string(~loc, hex)])])
   | `Named_color(color) => render_named_color(~loc, color)
   | `CurrentColor => id([%expr `currentColor])
@@ -1056,8 +1061,8 @@ let rec render_color = (~loc, value) =>
   | `Function_hsl(_)
   | `Function_hsla(_)
   | `Deprecated_system_color(_) => raise(Unsupported_feature)
-  }
-
+  };
+}
 and render_function_color_mix = (~loc, value: Types.function_color_mix) => {
   let render_rectangular_color_space = (x: Types.rectangular_color_space) => {
     switch (x) {
@@ -1850,12 +1855,15 @@ let border_style =
     variant_to_expression,
   );
 
-let render_line_width = (~loc, value: Types.line_width) =>
+let render_line_width = (~loc, value) =>
   switch (value) {
   | `Extended_length(l) => render_extended_length(~loc, l)
+  | `Extended_length_no_interp(l) =>
+    render_extended_length(~loc, (l :> Types.extended_length))
   | `Thick => [%expr `thick]
   | `Medium => [%expr `medium]
   | `Thin => [%expr `thin]
+  | `Interpolation(v) => render_variable(~loc, v)
   };
 
 let border_top_width =
@@ -1901,10 +1909,10 @@ let render_line_width_interp = (~loc) =>
   | `Line_width(lw) => render_line_width(~loc, lw)
   | `Interpolation(name) => render_variable(~loc, name);
 
-let render_border_style_interp = (~loc) =>
-  fun
-  | `Interpolation(name) => render_variable(~loc, name)
-  | `Line_style(ls) => variant_to_expression(~loc, ls);
+//let render_border_style_interp = (~loc) =>
+//  fun
+//  | `Interpolation(name) => render_variable(~loc, name)
+//  | `Line_style(ls) => variant_to_expression(~loc, ls);
 
 type borderDirection =
   | All
@@ -1921,37 +1929,47 @@ let direction_to_border = (~loc) =>
   | Right => [%expr CSS.borderRight]
   | Top => [%expr CSS.borderTop];
 
-let direction_to_fn_name = (~loc) =>
-  fun
-  | All => [%expr {js|border|js}]
-  | Left => [%expr {js|borderLeft|js}]
-  | Bottom => [%expr {js|borderBottom|js}]
-  | Right => [%expr {js|borderRight|js}]
-  | Top => [%expr {js|borderTop|js}];
-
-let render_border = (~loc, ~direction: borderDirection, border) => {
+let render_border =
+    (~loc, ~direction: borderDirection, border: Types.property_border) => {
+  let borderFn = direction_to_border(~loc, direction);
   switch (border) {
-  | `None =>
-    let borderFn = direction_to_fn_name(~loc, direction);
-    [[%expr CSS.unsafe([%e borderFn], {js|none|js})]];
-  | `Xor(`Interpolation(name)) =>
-    let borderFn = direction_to_border(~loc, direction);
-    [[%expr [%e borderFn]([%e render_variable(~loc, name)])]];
-  /* bs-css doesn't support border: 1px; */
-  | `Xor(_) => raise(Unsupported_feature)
-  /* bs-css doesn't support border: 1px solid; */
-  | `Static_0(_) => raise(Unsupported_feature)
-  | `Static_1(width, style, color) =>
-    let borderFn = direction_to_border(~loc, direction);
-    [
+  | `Border_value_no_interp(width, style, color) => [
       [%expr
         [%e borderFn](
-          [%e render_line_width_interp(~loc, width)],
-          [%e render_border_style_interp(~loc, style)],
-          [%e render_color_interp(~loc, color)],
+          ~width=?[%e render_option(~loc, render_line_width, width)],
+          ~style=?[%e render_option(~loc, variant_to_expression, style)],
+          ~color=?[%e render_option(~loc, render_color_no_interp, color)],
+          (),
         )
       ],
-    ];
+    ]
+  | `Border_value(v) =>
+    switch (v) {
+    | `Line_width(width) => [
+        [%expr
+          [%e borderFn](~width=[%e render_line_width(~loc, width)], ())
+        ],
+      ]
+    | `Static_0(width, style) => [
+        [%expr
+          [%e borderFn](
+            ~width=[%e render_line_width(~loc, width)],
+            ~style=[%e variant_to_expression(~loc, style)],
+            (),
+          )
+        ],
+      ]
+    | `Static_1(width, style, color) => [
+        [%expr
+          [%e borderFn](
+            ~width=[%e render_line_width(~loc, width)],
+            ~style=[%e variant_to_expression(~loc, style)],
+            ~color=[%e render_color(~loc, color)],
+            (),
+          )
+        ],
+      ]
+    }
   };
 };
 
@@ -2390,30 +2408,16 @@ let render_font_family = (~loc, value) =>
 
 // css-fonts-4
 let font_family =
-  polymorphic(
+  monomorphic(
     Property_parser.property_font_family,
-    (~loc, value: Types.property_font_family) =>
-    switch (value) {
-    | `Interpolation(v) =>
-      /* We need to add annotation since arrays can be mutable and the type isn't scoped enough */
-      let annotation = [%type: array(CSS.Types.FontFamilyName.t)];
-      [
-        [%expr
-          CSS.fontFamilies([%e render_variable(~loc, v)]: [%t annotation])
-        ],
-      ];
-    | `Font_families(font_families) => [
-        [%expr
-          CSS.fontFamilies(
-            [%e
-              font_families
-              |> List.map(render_font_family(~loc))
-              |> Builder.pexp_array(~loc)
-            ],
-          )
-        ],
-      ]
-    }
+    (~loc) => [%expr CSS.fontFamilies],
+    (~loc) =>
+      fun
+      | `Interpolation(v) => render_variable(~loc, v)
+      | `Xor(font_families) =>
+        font_families
+        |> List.map(render_font_family(~loc))
+        |> Builder.pexp_array(~loc),
   );
 
 let render_font_weight = (~loc) =>
@@ -3208,19 +3212,13 @@ let render_animation_name = (~loc) =>
 
 // css-animation-1
 let animation_name =
-  polymorphic(Property_parser.property_animation_name, (~loc) =>
-    fun
-    | [one] => {
-        let value = render_animation_name(~loc, one);
-        [[%expr CSS.animationName([%e value])]];
-      }
-    | many => {
-        let values =
-          many
-          |> List.map(render_animation_name(~loc))
-          |> Builder.pexp_array(~loc);
-        [[%expr CSS.animationNames([%e values])]];
-      }
+  monomorphic(
+    Property_parser.property_animation_name,
+    (~loc) => [%expr CSS.animationNames],
+    (~loc, many) =>
+      many
+      |> List.map(render_animation_name(~loc))
+      |> Builder.pexp_array(~loc),
   );
 
 let animation_duration =
@@ -3692,7 +3690,7 @@ let render_line_names = (~loc, value: Types.line_names) => {
   line_names
   |> String.concat(" ")
   |> Printf.sprintf("[%s]")
-  |> (name => [[%expr `name([%e render_string(~loc, name)])]]);
+  |> (name => [[%expr `lineNames([%e render_string(~loc, name)])]]);
 };
 
 let render_maybe_line_names = (~loc, value) => {
@@ -3899,13 +3897,15 @@ let grid_template_columns =
     (~loc) => [%expr CSS.gridTemplateColumns],
     (~loc, value: Types.property_grid_template_columns) =>
       switch (value) {
-      | `None => [%expr [|`none|]]
       | `Interpolation(v) => render_variable(~loc, v)
+      | `None => [%expr `none]
       | `Track_list(track_list, line_names) =>
-        render_track_list(~loc, track_list, line_names)
-      | `Auto_track_list(list) => render_auto_track_list(~loc, list)
-      | `Static((), None) => [%expr [|`subgrid|]]
-      | `Static((), Some(subgrid)) => render_subgrid(~loc, subgrid)
+        [%expr `value([%e render_track_list(~loc, track_list, line_names)])]
+      | `Auto_track_list(list) =>
+        [%expr `value([%e render_auto_track_list(~loc, list)])]
+      | `Static((), None) => [%expr `value([|`subgrid|])]
+      | `Static((), Some(subgrid)) =>
+        [%expr `value([%e render_subgrid(~loc, subgrid)])]
       },
   );
 
@@ -3915,13 +3915,15 @@ let grid_template_rows =
     (~loc) => [%expr CSS.gridTemplateRows],
     (~loc, value: Types.property_grid_template_rows) =>
       switch (value) {
-      | `None => [%expr [|`none|]]
       | `Interpolation(v) => render_variable(~loc, v)
+      | `None => [%expr `none]
       | `Track_list(track_list, line_names) =>
-        render_track_list(~loc, track_list, line_names)
-      | `Auto_track_list(list) => render_auto_track_list(~loc, list)
-      | `Static((), None) => [%expr [|`subgrid|]]
-      | `Static((), Some(subgrid)) => render_subgrid(~loc, subgrid)
+        [%expr `value([%e render_track_list(~loc, track_list, line_names)])]
+      | `Auto_track_list(list) =>
+        [%expr `value([%e render_auto_track_list(~loc, list)])]
+      | `Static((), None) => [%expr `value([|`subgrid|])]
+      | `Static((), Some(subgrid)) =>
+        [%expr `value([%e render_subgrid(~loc, subgrid)])]
       },
   );
 
@@ -5329,15 +5331,11 @@ let properties = [
 
 let render_when_unsupported_features = (~loc, property, value) => {
   /* Transform property name to camelCase since we bind to emotion with the Object API */
-  let propertyName = property |> to_camel_case |> render_string(~loc);
-  let unsafeInterpolation =
-    value
-    |> Property_parser.parse(Standard.interpolation)
-    |> Result.map(render_variable(~loc));
-  let value =
-    Result.value(unsafeInterpolation, ~default=render_string(~loc, value));
+  let propertyExpr = property |> to_camel_case |> render_string(~loc);
+  let valueExpr =
+    String_interpolation.transform(~loc, ~delimiter="js", value);
 
-  [%expr CSS.unsafe([%e propertyName], [%e value])];
+  [%expr CSS.unsafe([%e propertyExpr], [%e valueExpr])];
 };
 
 let findProperty = name => {

@@ -35,7 +35,12 @@
       CSS.selector(
         {js|abbr[title]|js},
         [|
-          CSS.unsafe({js|borderBottom|js}, {js|none|js}),
+          CSS.borderBottom(
+            ~width=?None,
+            ~style=?Some(`none),
+            ~color=?None,
+            (),
+          ),
           CSS.textDecoration(`underline),
           CSS.unsafe({js|textDecoration|js}, {js|underline dotted|js}),
         |],

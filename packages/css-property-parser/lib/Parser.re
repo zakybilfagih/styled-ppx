@@ -140,6 +140,9 @@ and clip_source = [%value.rec "<url>"]
 and color = [%value.rec
   "<rgb()> | <rgba()> | <hsl()> | <hsla()> | <hex-color> | <named-color> | 'currentColor' | <deprecated-system-color> | <interpolation> | <var()> | <color-mix()>"
 ]
+and color_no_interp = [%value.rec
+  "<rgb()> | <rgba()> | <hsl()> | <hsla()> | <hex-color> | <named-color> | 'currentColor' | <deprecated-system-color> | <var()> | <color-mix()>"
+]
 and color_stop = [%value.rec "<color-stop-length> | <color-stop-angle>"]
 and color_stop_angle = [%value.rec "[ <extended-angle> ]{1,2}"]
 /* and color_stop_length = [%value.rec "[ <extended-length> | <extended-percentage> ]{1,2}"] */
@@ -469,9 +472,13 @@ and leader_type = [%value.rec "'dotted' | 'solid' | 'space' | <string>"]
 and left = [%value.rec "<extended-length> | 'auto'"]
 and line_name_list = [%value.rec "[ <line-names> | <name-repeat> ]+"]
 and line_style = [%value.rec
+  "'none' | 'hidden' | 'dotted' | 'dashed' | 'solid' | 'double' | 'groove' | 'ridge' | 'inset' | 'outset' | <interpolation>"
+]
+and line_style_no_interp = [%value.rec
   "'none' | 'hidden' | 'dotted' | 'dashed' | 'solid' | 'double' | 'groove' | 'ridge' | 'inset' | 'outset'"
 ]
-and line_width = [%value.rec "<extended-length> | 'thin' | 'medium' | 'thick'"]
+and line_width = [%value.rec "<extended-length> | 'thin' | 'medium' | 'thick' | <interpolation>"]
+and line_width_no_interp = [%value.rec "<extended-length-no-interp> | 'thin' | 'medium' | 'thick'"]
 and linear_color_hint = [%value.rec
   "<extended-length> | <extended-percentage>"
 ]
@@ -870,9 +877,9 @@ and property_baseline_shift = [%value.rec
 and property_behavior = [%value.rec "[ <url> ]+"]
 and property_block_overflow = [%value.rec "'clip' | 'ellipsis' | <string>"]
 and property_block_size = [%value.rec "<'width'>"]
-and property_border = [%value.rec
-  "'none' | [ <line-width> | <interpolation> ] | [ <line-width> | <interpolation> ] [ <line-style> | <interpolation> ] | [ <line-width> | <interpolation> ] [ <line-style> | <interpolation> ] [ <color> | <interpolation> ]"
-]
+and border_value = [%value.rec "<line-width> | [ <line-width> <line-style> ] | [ <line-width> <line-style> <color> ]"]
+and border_value_no_interp = [%value.rec "<line-width-no-interp> || <line-style-no-interp> || <color-no-interp>"]
+and property_border = [%value.rec "<border-value> | <border-value-no-interp>"]
 and property_border_block = [%value.rec "<'border'>"]
 and property_border_block_color = [%value.rec "[ <'border-top-color'> ]{1,2}"]
 and property_border_block_end = [%value.rec "<'border'>"]
@@ -1085,10 +1092,9 @@ and property_float = [%value.rec
 and property_font = [%value.rec
   "[ <'font-style'> || <font-variant-css21> || <'font-weight'> || <'font-stretch'> ]? <'font-size'> [ '/' <'line-height'> ]? <'font-family'> | 'caption' | 'icon' | 'menu' | 'message-box' | 'small-caption' | 'status-bar'"
 ]
-and font_families = [%value.rec
-  "[ <family-name> | <generic-family> | <interpolation> ]#"
+and property_font_family = [%value.rec
+  "[ <family-name> | <generic-family> | <interpolation> ]# | <interpolation>"
 ]
-and property_font_family = [%value.rec "<font_families> | <interpolation>"]
 and property_font_feature_settings = [%value.rec
   "'normal' | [ <feature-tag-value> ]#"
 ]
@@ -1105,7 +1111,7 @@ and property_font_smooth = [%value.rec
 ]
 and property_font_stretch = [%value.rec "<font-stretch-absolute>"]
 and property_font_style = [%value.rec
-  "'normal' | 'italic' | 'oblique' | <interpolation> | [ 'oblique' <extended-angle> ]?"
+  "'normal' | 'italic' | 'oblique' |  [ 'oblique' <extended-angle> ]?"
 ]
 and property_font_synthesis = [%value.rec "'none' | 'weight' || 'style'"]
 and property_font_synthesis_weight = [%value.rec "'auto' | 'none'"]
@@ -1138,7 +1144,7 @@ and property_font_variant_emoji = [%value.rec
   "'normal' | 'text' | 'emoji' | 'unicode'"
 ]
 and property_font_weight = [%value.rec
-  "<font-weight-absolute> | 'bolder' | 'lighter' | <interpolation>"
+  "<font-weight-absolute> | 'bolder' | 'lighter'"
 ]
 and property_gap = [%value.rec "<'row-gap'> [ <'column-gap'> ]?"]
 and property_glyph_orientation_horizontal = [%value.rec "<extended-angle>"]
@@ -1900,6 +1906,9 @@ and target = [%value.rec
 and extended_length = [%value.rec
   "<length> | <calc()> | <interpolation> | <min()> | <max()>"
 ]
+and extended_length_no_interp = [%value.rec
+  "<length> | <calc()> | <min()> | <max()>"
+]
 and length_percentage = [%value.rec
   "<extended-length> | <extended-percentage>"
 ]
@@ -2009,284 +2018,6 @@ let check = (prop: Rule.rule('a), value) =>
 let check_map =
   StringMap.of_seq(
     List.to_seq([
-      ("-legacy-gradient", check(_legacy_gradient)),
-      ("-legacy-linear-gradient", check(_legacy_linear_gradient)),
-      (
-        "-legacy-linear-gradient-arguments",
-        check(_legacy_linear_gradient_arguments),
-      ),
-      ("-legacy-radial-gradient", check(_legacy_radial_gradient)),
-      (
-        "-legacy-radial-gradient-arguments",
-        check(_legacy_radial_gradient_arguments),
-      ),
-      (
-        "-legacy-radial-gradient-shape",
-        check(_legacy_radial_gradient_shape),
-      ),
-      ("-legacy-radial-gradient-size", check(_legacy_radial_gradient_size)),
-      (
-        "-legacy-repeating-linear-gradient",
-        check(_legacy_repeating_linear_gradient),
-      ),
-      (
-        "-legacy-repeating-radial-gradient",
-        check(_legacy_repeating_radial_gradient),
-      ),
-      ("-ms-filter", check(_ms_filter)),
-      ("-ms-filter-function", check(_ms_filter_function)),
-      ("-ms-filter-function-legacy", check(_ms_filter_function_legacy)),
-      ("-ms-filter-function-list", check(_ms_filter_function_list)),
-      ("-ms-filter-function-progid", check(_ms_filter_function_progid)),
-      ("-non-standard-color", check(_non_standard_color)),
-      ("-non-standard-font", check(_non_standard_font)),
-      (
-        "-non-standard-image-rendering",
-        check(_non_standard_image_rendering),
-      ),
-      ("-non-standard-overflow", check(_non_standard_overflow)),
-      ("-non-standard-width", check(_non_standard_width)),
-      ("-webkit-gradient-color-stop", check(_webkit_gradient_color_stop)),
-      ("-webkit-gradient-point", check(_webkit_gradient_point)),
-      ("-webkit-gradient-radius", check(_webkit_gradient_radius)),
-      ("-webkit-gradient-type", check(_webkit_gradient_type)),
-      ("-webkit-mask-box-repeat", check(_webkit_mask_box_repeat)),
-      ("-webkit-mask-clip-style", check(_webkit_mask_clip_style)),
-      ("absolute-size", check(absolute_size)),
-      ("age", check(age)),
-      ("alpha-value", check(alpha_value)),
-      ("angular-color-hint", check(angular_color_hint)),
-      ("angular-color-stop", check(angular_color_stop)),
-      ("angular-color-stop-list", check(angular_color_stop_list)),
-      ("hue-interpolation-method", check(hue_interpolation_method)),
-      ("polar-color-space", check(polar_color_space)),
-      ("rectangular-color-space", check(rectangular_color_space)),
-      ("color-interpolation-method", check(color_interpolation_method)),
-      ("animateable-feature", check(animateable_feature)),
-      ("attachment", check(attachment)),
-      ("attr-fallback", check(attr_fallback)),
-      ("attr-matcher", check(attr_matcher)),
-      ("attr-modifier", check(attr_modifier)),
-      ("attr-name", check(attr_name)),
-      ("attribute-selector", check(attribute_selector)),
-      ("auto-repeat", check(auto_repeat)),
-      ("auto-track-list", check(auto_track_list)),
-      ("baseline-position", check(baseline_position)),
-      ("basic-shape", check(basic_shape)),
-      ("bg-image", check(bg_image)),
-      ("bg-layer", check(bg_layer)),
-      ("bg-position", check(bg_position)),
-      ("bg-size", check(bg_size)),
-      ("blend-mode", check(blend_mode)),
-      ("border-radius", check(border_radius)),
-      ("bottom", check(bottom)),
-      ("box", check(box)),
-      ("calc-product", check(calc_product)),
-      ("calc-sum", check(calc_sum)),
-      ("calc-value", check(calc_value)),
-      ("cf-final-image", check(cf_final_image)),
-      ("cf-mixing-image", check(cf_mixing_image)),
-      ("class-selector", check(class_selector)),
-      ("clip-source", check(clip_source)),
-      ("color", check(color)),
-      ("color-stop", check(color_stop)),
-      ("color-stop-angle", check(color_stop_angle)),
-      ("color-stop-length", check(color_stop_length)),
-      ("color-stop-list", check(color_stop_list)),
-      ("combinator", check(combinator)),
-      ("common-lig-values", check(common_lig_values)),
-      ("compat-auto", check(compat_auto)),
-      ("complex-selector", check(complex_selector)),
-      ("complex-selector-list", check(complex_selector_list)),
-      ("composite-style", check(composite_style)),
-      ("compositing-operator", check(compositing_operator)),
-      ("compound-selector", check(compound_selector)),
-      ("compound-selector-list", check(compound_selector_list)),
-      ("content-distribution", check(content_distribution)),
-      ("content-list", check(content_list)),
-      ("content-position", check(content_position)),
-      ("content-replacement", check(content_replacement)),
-      ("contextual-alt-values", check(contextual_alt_values)),
-      ("counter-style", check(counter_style)),
-      ("counter-style-name", check(counter_style_name)),
-      ("cubic-bezier-timing-function", check(cubic_bezier_timing_function)),
-      ("declaration", check(declaration)),
-      ("declaration-list", check(declaration_list)),
-      ("deprecated-system-color", check(deprecated_system_color)),
-      ("discretionary-lig-values", check(discretionary_lig_values)),
-      ("display-box", check(display_box)),
-      ("display-inside", check(display_inside)),
-      ("display-internal", check(display_internal)),
-      ("display-legacy", check(display_legacy)),
-      ("display-listitem", check(display_listitem)),
-      ("display-outside", check(display_outside)),
-      ("east-asian-variant-values", check(east_asian_variant_values)),
-      ("east-asian-width-values", check(east_asian_width_values)),
-      ("ending-shape", check(ending_shape)),
-      ("explicit-track-list", check(explicit_track_list)),
-      ("family-name", check(family_name)),
-      ("feature-tag-value", check(feature_tag_value)),
-      ("feature-type", check(feature_type)),
-      ("feature-value-block", check(feature_value_block)),
-      ("feature-value-block-list", check(feature_value_block_list)),
-      ("feature-value-declaration", check(feature_value_declaration)),
-      (
-        "feature-value-declaration-list",
-        check(feature_value_declaration_list),
-      ),
-      ("feature-value-name", check(feature_value_name)),
-      ("fill-rule", check(fill_rule)),
-      ("filter-function", check(filter_function)),
-      ("filter-function-list", check(filter_function_list)),
-      ("final-bg-layer", check(final_bg_layer)),
-      ("fixed-breadth", check(fixed_breadth)),
-      ("fixed-repeat", check(fixed_repeat)),
-      ("fixed-size", check(fixed_size)),
-      ("font-stretch-absolute", check(font_stretch_absolute)),
-      ("font-variant-css21", check(font_variant_css21)),
-      ("font-weight-absolute", check(font_weight_absolute)),
-      ("function_-webkit-gradient", check(function__webkit_gradient)),
-      ("function_attr", check(function_attr)),
-      ("function_blur", check(function_blur)),
-      ("function_brightness", check(function_brightness)),
-      ("function_calc", check(function_calc)),
-      ("function_circle", check(function_circle)),
-      ("function_clamp", check(function_clamp)),
-      ("function_conic-gradient", check(function_conic_gradient)),
-      ("function_contrast", check(function_contrast)),
-      ("function_counter", check(function_counter)),
-      ("function_counters", check(function_counters)),
-      ("function_cross-fade", check(function_cross_fade)),
-      ("function_drop-shadow", check(function_drop_shadow)),
-      ("function_element", check(function_element)),
-      ("function_ellipse", check(function_ellipse)),
-      ("function_env", check(function_env)),
-      ("function_fit-content", check(function_fit_content)),
-      ("function_grayscale", check(function_grayscale)),
-      ("function_hsl", check(function_hsl)),
-      ("function_hsla", check(function_hsla)),
-      ("function_hue-rotate", check(function_hue_rotate)),
-      ("function_image", check(function_image)),
-      ("function_image-set", check(function_image_set)),
-      ("function_inset", check(function_inset)),
-      ("function_invert", check(function_invert)),
-      ("function_leader", check(function_leader)),
-      ("function_linear-gradient", check(function_linear_gradient)),
-      ("function_matrix", check(function_matrix)),
-      ("function_matrix3d", check(function_matrix3d)),
-      ("function_max", check(function_max)),
-      ("function_min", check(function_min)),
-      ("function_minmax", check(function_minmax)),
-      ("function_opacity", check(function_opacity)),
-      ("function_paint", check(function_paint)),
-      ("function_path", check(function_path)),
-      ("function_perspective", check(function_perspective)),
-      ("function_polygon", check(function_polygon)),
-      ("function_radial-gradient", check(function_radial_gradient)),
-      (
-        "function_repeating-linear-gradient",
-        check(function_repeating_linear_gradient),
-      ),
-      (
-        "function_repeating-radial-gradient",
-        check(function_repeating_radial_gradient),
-      ),
-      ("function_rgb", check(function_rgb)),
-      ("function_rgba", check(function_rgba)),
-      ("function_rotate", check(function_rotate)),
-      ("function_rotate3d", check(function_rotate3d)),
-      ("function_rotateX", check(function_rotateX)),
-      ("function_rotateY", check(function_rotateY)),
-      ("function_rotateZ", check(function_rotateZ)),
-      ("function_saturate", check(function_saturate)),
-      ("function_scale", check(function_scale)),
-      ("function_scale3d", check(function_scale3d)),
-      ("function_scaleX", check(function_scaleX)),
-      ("function_scaleY", check(function_scaleY)),
-      ("function_scaleZ", check(function_scaleZ)),
-      ("function_sepia", check(function_sepia)),
-      ("function_skew", check(function_skew)),
-      ("function_skewX", check(function_skewX)),
-      ("function_skewY", check(function_skewY)),
-      ("function_target-counter", check(function_target_counter)),
-      ("function_target-counters", check(function_target_counters)),
-      ("function_target-text", check(function_target_text)),
-      ("function_translate", check(function_translate)),
-      ("function_translate3d", check(function_translate3d)),
-      ("function_translateX", check(function_translateX)),
-      ("function_translateY", check(function_translateY)),
-      ("function_translateZ", check(function_translateZ)),
-      ("function_var", check(function_var)),
-      ("gender", check(gender)),
-      ("general-enclosed", check(general_enclosed)),
-      ("generic-family", check(generic_family)),
-      ("generic-name", check(generic_name)),
-      ("generic-voice", check(generic_voice)),
-      ("geometry-box", check(geometry_box)),
-      ("gradient", check(gradient)),
-      ("grid-line", check(grid_line)),
-      ("historical-lig-values", check(historical_lig_values)),
-      ("hue", check(hue)),
-      ("id-selector", check(id_selector)),
-      ("image", check(image)),
-      ("image-set-option", check(image_set_option)),
-      ("image-src", check(image_src)),
-      ("image-tags", check(image_tags)),
-      ("inflexible-breadth", check(inflexible_breadth)),
-      ("keyframe-block", check(keyframe_block)),
-      ("keyframe-block-list", check(keyframe_block_list)),
-      ("keyframe-selector", check(keyframe_selector)),
-      ("keyframes-name", check(keyframes_name)),
-      ("leader-type", check(leader_type)),
-      ("left", check(left)),
-      ("line-name-list", check(line_name_list)),
-      ("line-names", check(line_names)),
-      ("line-style", check(line_style)),
-      ("line-width", check(line_width)),
-      ("linear-color-hint", check(linear_color_hint)),
-      ("linear-color-stop", check(linear_color_stop)),
-      ("mask-image", check(mask_image)),
-      ("mask-layer", check(mask_layer)),
-      ("mask-position", check(mask_position)),
-      ("mask-reference", check(mask_reference)),
-      ("mask-source", check(mask_source)),
-      ("masking-mode", check(masking_mode)),
-      ("media-and", check(media_and)),
-      ("media-condition", check(media_condition)),
-      ("media-condition-without-or", check(media_condition_without_or)),
-      ("media-feature", check(media_feature)),
-      ("media-in-parens", check(media_in_parens)),
-      ("media-not", check(media_not)),
-      ("media-or", check(media_or)),
-      ("media-query", check(media_query)),
-      ("media-query-list", check(media_query_list)),
-      ("media-type", check(media_type)),
-      ("mf-boolean", check(mf_boolean)),
-      ("mf-name", check(mf_name)),
-      ("mf-plain", check(mf_plain)),
-      ("mf-range", check(mf_range)),
-      ("mf-value", check(mf_value)),
-      ("name-repeat", check(name_repeat)),
-      ("named-color", check(named_color)),
-      ("namespace-prefix", check(namespace_prefix)),
-      ("ns-prefix", check(ns_prefix)),
-      ("nth", check(nth)),
-      ("number-one-or-greater", check(number_one_or_greater)),
-      ("number-percentage", check(number_percentage)),
-      ("alpha-value", check(number_zero_one)),
-      ("numeric-figure-values", check(numeric_figure_values)),
-      ("numeric-fraction-values", check(numeric_fraction_values)),
-      ("numeric-spacing-values", check(numeric_spacing_values)),
-      ("outline-radius", check(outline_radius)),
-      ("overflow-position", check(overflow_position)),
-      ("page-body", check(page_body)),
-      ("page-margin-box", check(page_margin_box)),
-      ("page-margin-box-type", check(page_margin_box_type)),
-      ("page-selector", check(page_selector)),
-      ("page-selector-list", check(page_selector_list)),
-      ("paint", check(paint)),
-      ("position", check(position)),
-      ("positive-integer", check(positive_integer)),
       ("property--moz-appearance", check(property__moz_appearance)),
       (
         "property--moz-background-clip",
@@ -3053,6 +2784,10 @@ let check_map =
       ("property-min-inline-size", check(property_min_inline_size)),
       ("property-min-width", check(property_min_width)),
       ("property-mix-blend-mode", check(property_mix_blend_mode)),
+      ("property-nav-down", check(property_nav_down)),
+      ("property-nav-left", check(property_nav_left)),
+      ("property-nav-right", check(property_nav_right)),
+      ("property-nav-up", check(property_nav_up)),
       ("property-object-fit", check(property_object_fit)),
       ("property-object-position", check(property_object_position)),
       ("property-offset", check(property_offset)),
@@ -3378,72 +3113,6 @@ let check_map =
       ("property-container", check(property_container)),
       ("property-container-name", check(property_container_name)),
       ("property-container-type", check(property_container_type)),
-      ("pseudo-class-selector", check(pseudo_class_selector)),
-      ("pseudo-element-selector", check(pseudo_element_selector)),
-      ("pseudo-page", check(pseudo_page)),
-      ("quote", check(quote)),
-      ("ratio", check(ratio)),
-      ("relative-selector", check(relative_selector)),
-      ("relative-selector-list", check(relative_selector_list)),
-      ("relative-size", check(relative_size)),
-      ("repeat-style", check(repeat_style)),
-      ("right", check(right)),
-      ("self-position", check(self_position)),
-      ("shadow", check(shadow)),
-      ("shadow-t", check(shadow_t)),
-      ("shape", check(shape)),
-      ("shape-box", check(shape_box)),
-      ("shape-radius", check(shape_radius)),
-      ("side-or-corner", check(side_or_corner)),
-      ("single-animation", check(single_animation)),
-      ("font-families", check(font_families)),
-      ("single-animation-direction", check(single_animation_direction)),
-      ("single-animation-fill-mode", check(single_animation_fill_mode)),
-      (
-        "single-animation-iteration-count",
-        check(single_animation_iteration_count),
-      ),
-      ("single-animation-play-state", check(single_animation_play_state)),
-      ("single-transition", check(single_transition)),
-      ("single-transition-property", check(single_transition_property)),
-      ("size", check(size)),
-      ("ray-size", check(ray_size)),
-      ("radial-size", check(radial_size)),
-      ("step-position", check(step_position)),
-      ("step-timing-function", check(step_timing_function)),
-      ("subclass-selector", check(subclass_selector)),
-      ("supports-condition", check(supports_condition)),
-      ("supports-decl", check(supports_decl)),
-      ("supports-feature", check(supports_feature)),
-      ("supports-in-parens", check(supports_in_parens)),
-      ("supports-selector-fn", check(supports_selector_fn)),
-      ("svg-length", check(svg_length)),
-      ("svg-writing-mode", check(svg_writing_mode)),
-      ("symbol", check(symbol)),
-      ("target", check(target)),
-      ("timing-function", check(timing_function)),
-      ("top", check(top)),
-      ("track-breadth", check(track_breadth)),
-      ("track-group", check(track_group)),
-      ("track-list", check(track_list)),
-      ("track-list-v0", check(track_list_v0)),
-      ("track-minmax", check(track_minmax)),
-      ("track-repeat", check(track_repeat)),
-      ("track-size", check(track_size)),
-      ("transform-function", check(transform_function)),
-      ("transform-list", check(transform_list)),
-      ("type-or-unit", check(type_or_unit)),
-      ("type-selector", check(type_selector)),
-      ("viewport-length", check(viewport_length)),
-      ("wq-name", check(wq_name)),
-      ("x", check(x)),
-      ("y", check(y)),
-      /* TODO: calc needs to be available in length */
-      ("extended-length", check(extended_length)),
-      ("extended-frequency", check(extended_frequency)),
-      ("extended-angle", check(extended_angle)),
-      ("extended-time", check(extended_time)),
-      ("extended-percentage", check(extended_percentage)),
     ]),
   );
 

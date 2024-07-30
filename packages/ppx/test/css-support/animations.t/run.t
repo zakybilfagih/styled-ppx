@@ -26,8 +26,8 @@ If this test fail means that the module is not in sync with the ppx
       (100, [|CSS.opacity(1.)|]),
     |]);
   
-  CSS.animationName(CSS.Types.AnimationName.make({js|random|js}));
-  CSS.animationName(foo);
+  CSS.animationNames([|CSS.Types.AnimationName.make({js|random|js})|]);
+  CSS.animationNames([|foo|]);
   CSS.animationNames([|foo, bar|]);
   CSS.animationDuration(`s(0));
   CSS.animationDuration(`s(1));
