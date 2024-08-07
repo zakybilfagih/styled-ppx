@@ -81,7 +81,7 @@ and alpha_value = [%value.rec "<number> | <extended-percentage>"]
 and angular_color_hint = [%value.rec
   "<extended-angle> | <extended-percentage>"
 ]
-and angular_color_stop = [%value.rec "<color> && [ <color-stop-angle> ]?"]
+and angular_color_stop = [%value.rec "[ <color> | <interpolation> ] && [ <color-stop-angle> ]?"]
 and angular_color_stop_list = [%value.rec
   "[ <angular-color-stop> [ ',' <angular-color-hint> ]? ]# ',' <angular-color-stop>"
 ]
@@ -138,9 +138,6 @@ and cf_mixing_image = [%value.rec "[ <extended-percentage> ]? && <image>"]
 and class_selector = [%value.rec "'.' <ident-token>"]
 and clip_source = [%value.rec "<url>"]
 and color = [%value.rec
-  "<rgb()> | <rgba()> | <hsl()> | <hsla()> | <hex-color> | <named-color> | 'currentColor' | <deprecated-system-color> | <interpolation> | <var()> | <color-mix()>"
-]
-and color_no_interp = [%value.rec
   "<rgb()> | <rgba()> | <hsl()> | <hsla()> | <hex-color> | <named-color> | 'currentColor' | <deprecated-system-color> | <var()> | <color-mix()>"
 ]
 and color_stop = [%value.rec "<color-stop-length> | <color-stop-angle>"]
@@ -156,7 +153,7 @@ and color_stop_length = [%value.rec
    The original spec is `color_stop_list = [%value.rec "[ <linear-color-stop> [ ',' <linear-color-hint> ]? ]# ',' <linear-color-stop>"]`
    */
 and color_stop_list = [%value.rec
-  "[ [<color>? <length-percentage>] | [<color> <length-percentage>?] ]#"
+  "[ [[<color> | <interpolation>]? <length-percentage>] | [[<color> | <interpolation>] <length-percentage>?] ]#"
 ]
 and hue_interpolation_method = [%value.rec
   " [ 'shorter' | 'longer' | 'increasing' | 'decreasing' ] && 'hue' "
@@ -170,7 +167,7 @@ and color_interpolation_method = [%value.rec
 ]
 and function_color_mix = [%value.rec
   // TODO: Use <extended-percentage>
-  "color-mix(<color-interpolation-method> ',' [ <color> && <percentage>? ] ',' [ <color> && <percentage>? ])"
+  "color-mix(<color-interpolation-method> ',' [ [ <color> | <interpolation> ] && [ <percentage> | <interpolation> ]? ] ',' [ [ <color> | <interpolation> ] && [ <percentage> | <interpolation> ]? ])"
 ]
 and combinator = [%value.rec "'>' | '+' | '~' | '||'"]
 and common_lig_values = [%value.rec
@@ -307,7 +304,7 @@ and function_cross_fade = [%value.rec
 ]
 /* drop-shadow can have 2 length and order doesn't matter, we changed to be more restrict and always expect 3 */
 and function_drop_shadow = [%value.rec
-  "drop-shadow(<extended-length> <extended-length> <extended-length> [ <color> ]?)"
+  "drop-shadow(<extended-length> <extended-length> <extended-length> [ <color> | <interpolation> ]?)"
 ]
 and function_element = [%value.rec "element( <id-selector> )"]
 and function_ellipse = [%value.rec
@@ -330,7 +327,7 @@ and function_hsla = [%value.rec
 ]
 and function_hue_rotate = [%value.rec "hue-rotate( <extended-angle> )"]
 and function_image = [%value.rec
-  "image( [ <image-tags> ]? [ <image-src> ]? ',' [ <color> ]? )"
+  "image( [ <image-tags> ]? [ <image-src> ]? ',' [ <color> | <interpolation> ]? )"
 ]
 and function_image_set = [%value.rec "image-set( [ <image-set-option> ]# )"]
 and function_inset = [%value.rec
@@ -472,13 +469,9 @@ and leader_type = [%value.rec "'dotted' | 'solid' | 'space' | <string>"]
 and left = [%value.rec "<extended-length> | 'auto'"]
 and line_name_list = [%value.rec "[ <line-names> | <name-repeat> ]+"]
 and line_style = [%value.rec
-  "'none' | 'hidden' | 'dotted' | 'dashed' | 'solid' | 'double' | 'groove' | 'ridge' | 'inset' | 'outset' | <interpolation>"
-]
-and line_style_no_interp = [%value.rec
   "'none' | 'hidden' | 'dotted' | 'dashed' | 'solid' | 'double' | 'groove' | 'ridge' | 'inset' | 'outset'"
 ]
-and line_width = [%value.rec "<extended-length> | 'thin' | 'medium' | 'thick' | <interpolation>"]
-and line_width_no_interp = [%value.rec "<extended-length-no-interp> | 'thin' | 'medium' | 'thick'"]
+and line_width = [%value.rec "<extended-length> | 'thin' | 'medium' | 'thick'"]
 and linear_color_hint = [%value.rec
   "<extended-length> | <extended-percentage>"
 ]
@@ -797,7 +790,7 @@ and property__webkit_mask_size = [%value.rec "[ <bg-size> ]#"]
 and property__webkit_overflow_scrolling = [%value.rec "'auto' | 'touch'"]
 and property__webkit_print_color_adjust = [%value.rec "'economy' | 'exact'"]
 and property__webkit_tap_highlight_color = [%value.rec "<color>"]
-and property__webkit_text_fill_color = [%value.rec "<color>"]
+and property__webkit_text_fill_color = [%value.rec "<color> | <interpolation>"]
 and property__webkit_text_security = [%value.rec
   "'none' | 'circle' | 'disc' | 'square'"
 ]
@@ -859,7 +852,7 @@ and property_background = [%value.rec "[ <bg-layer> ',' ]* <final-bg-layer>"]
 and property_background_attachment = [%value.rec "[ <attachment> ]#"]
 and property_background_blend_mode = [%value.rec "[ <blend-mode> ]#"]
 and property_background_clip = [%value.rec "[ <box> | 'text']#"]
-and property_background_color = [%value.rec "<color>"]
+and property_background_color = [%value.rec "<color> | <interpolation>"]
 and property_background_image = [%value.rec "[ <bg-image> ]#"]
 and property_background_origin = [%value.rec "[ <box> ]#"]
 and property_background_position = [%value.rec "[ <bg-position> ]#"]
@@ -877,8 +870,14 @@ and property_baseline_shift = [%value.rec
 and property_behavior = [%value.rec "[ <url> ]+"]
 and property_block_overflow = [%value.rec "'clip' | 'ellipsis' | <string>"]
 and property_block_size = [%value.rec "<'width'>"]
-and border_value = [%value.rec "<line-width> | [ <line-width> <line-style> ] | [ <line-width> <line-style> <color> ]"]
-and border_value_no_interp = [%value.rec "<line-width-no-interp> || <line-style-no-interp> || <color-no-interp>"]
+and border_value = [%value.rec
+  "[ <line-width> | <interpolation> ]
+| [ [ <line-width> | <interpolation> ] [ <line-style> | <interpolation> ] ]
+| [ [ <line-width> | <interpolation> ] [ <line-style> | <interpolation> ] [ <color> | <interpolation> ] ]"
+]
+and border_value_no_interp = [%value.rec
+  "<line-width> || <line-style> || <color>"
+]
 and property_border = [%value.rec "<border-value> | <border-value-no-interp>"]
 and property_border_block = [%value.rec "<'border'>"]
 and property_border_block_color = [%value.rec "[ <'border-top-color'> ]{1,2}"]
@@ -903,7 +902,7 @@ and property_border_bottom_right_radius = [%value.rec
 and property_border_bottom_style = [%value.rec "<line-style>"]
 and property_border_bottom_width = [%value.rec "<line-width>"]
 and property_border_collapse = [%value.rec "'collapse' | 'separate'"]
-and property_border_color = [%value.rec "[ <color> ]{1,4}"]
+and property_border_color = [%value.rec "[ <color> | <interpolation> ]{1,4}"]
 and property_border_end_end_radius = [%value.rec
   "[ <extended-length> | <extended-percentage> ]{1,2}"
 ]
@@ -939,7 +938,7 @@ and property_border_inline_start_width = [%value.rec "<'border-top-width'>"]
 and property_border_inline_style = [%value.rec "<'border-top-style'>"]
 and property_border_inline_width = [%value.rec "<'border-top-width'>"]
 and property_border_left = [%value.rec "<'border'>"]
-and property_border_left_color = [%value.rec "<color>"]
+and property_border_left_color = [%value.rec "<color> | <interpolation>"]
 and property_border_left_style = [%value.rec "<line-style>"]
 and property_border_left_width = [%value.rec "<line-width>"]
 /* border-radius isn't supported with the entire spec in bs-css: `"[ <extended-length> | <extended-percentage> ]{1,4} [ '/' [ <extended-length> | <extended-percentage> ]{1,4} ]?"` */
@@ -947,7 +946,7 @@ and property_border_radius = [%value.rec
   "<extended-length> | <extended-percentage>"
 ]
 and property_border_right = [%value.rec "<'border'>"]
-and property_border_right_color = [%value.rec "<color>"]
+and property_border_right_color = [%value.rec "<color> | <interpolation>"]
 and property_border_right_style = [%value.rec "<line-style>"]
 and property_border_right_width = [%value.rec "<line-width>"]
 and property_border_spacing = [%value.rec
@@ -962,7 +961,7 @@ and property_border_start_start_radius = [%value.rec
 /* bs-css doesn't support list of styles, the original spec is: `[ <line-style> ]{1,4}` */
 and property_border_style = [%value.rec "<line-style>"]
 and property_border_top = [%value.rec "<'border'>"]
-and property_border_top_color = [%value.rec "<color>"]
+and property_border_top_color = [%value.rec "<color> | <interpolation>"]
 and property_border_top_left_radius = [%value.rec
   "[ <extended-length> | <extended-percentage> ]{1,2}"
 ]
@@ -1004,7 +1003,7 @@ and property_break_inside = [%value.rec
 and property_caption_side = [%value.rec
   "'top' | 'bottom' | 'block-start' | 'block-end' | 'inline-start' | 'inline-end'"
 ]
-and property_caret_color = [%value.rec "'auto' | <color>"]
+and property_caret_color = [%value.rec "'auto' | <color> | <interpolation>"]
 and property_clear = [%value.rec
   "'none' | 'left' | 'right' | 'both' | 'inline-start' | 'inline-end'"
 ]
@@ -1013,7 +1012,7 @@ and property_clip_path = [%value.rec
   "<clip-source> | <basic-shape> || <geometry-box> | 'none'"
 ]
 and property_clip_rule = [%value.rec "'nonzero' | 'evenodd'"]
-and property_color = [%value.rec "<color>"]
+and property_color = [%value.rec "<color> | <interpolation>"]
 and property_color_interpolation_filters = [%value.rec
   "'auto' | 'sRGB' | 'linearRGB'"
 ]
@@ -1027,7 +1026,7 @@ and property_column_gap = [%value.rec
 and property_column_rule = [%value.rec
   "<'column-rule-width'> || <'column-rule-style'> || <'column-rule-color'>"
 ]
-and property_column_rule_color = [%value.rec "<color>"]
+and property_column_rule_color = [%value.rec "<color> | <interpolation>"]
 and property_column_rule_style = [%value.rec "<'border-style'>"]
 and property_column_rule_width = [%value.rec "<'border-width'>"]
 and property_column_span = [%value.rec "'none' | 'all'"]
@@ -1400,7 +1399,7 @@ and property_orphans = [%value.rec "<integer>"]
 and property_outline = [%value.rec
   "'none' | <'outline-width'> | [ <'outline-width'> <'outline-style'> ] | [ <'outline-width'> <'outline-style'> [ <color> | <interpolation> ]]"
 ]
-and property_outline_color = [%value.rec "<color>"]
+and property_outline_color = [%value.rec "<color> | <interpolation>"]
 and property_outline_offset = [%value.rec "<extended-length>"]
 and property_outline_style = [%value.rec
   "'auto' | <line-style> | <interpolation>"
@@ -1585,19 +1584,19 @@ and property_scroll_snap_type_y = [%value.rec
   "'none' | 'mandatory' | 'proximity'"
 ]
 and property_scrollbar_color = [%value.rec
-  "'auto' | 'dark' | 'light' | [ <color> ]{2}"
+  "'auto' | 'dark' | 'light' | [ <color> | <interpolation> ]{2}"
 ]
 and property_scrollbar_width = [%value.rec
   "'auto' | 'thin' | 'none' | <extended-length>"
 ]
-and property_scrollbar_3dlight_color = [%value.rec "<color>"]
-and property_scrollbar_arrow_color = [%value.rec "<color>"]
-and property_scrollbar_base_color = [%value.rec "<color>"]
-and property_scrollbar_darkshadow_color = [%value.rec "<color>"]
-and property_scrollbar_face_color = [%value.rec "<color>"]
-and property_scrollbar_highlight_color = [%value.rec "<color>"]
-and property_scrollbar_shadow_color = [%value.rec "<color>"]
-and property_scrollbar_track_color = [%value.rec "<color>"]
+and property_scrollbar_3dlight_color = [%value.rec "<color> | <interpolation>"]
+and property_scrollbar_arrow_color = [%value.rec "<color> | <interpolation>"]
+and property_scrollbar_base_color = [%value.rec "<color> | <interpolation>"]
+and property_scrollbar_darkshadow_color = [%value.rec "<color> | <interpolation>"]
+and property_scrollbar_face_color = [%value.rec "<color> | <interpolation>"]
+and property_scrollbar_highlight_color = [%value.rec "<color> | <interpolation>"]
+and property_scrollbar_shadow_color = [%value.rec "<color> | <interpolation>"]
+and property_scrollbar_track_color = [%value.rec "<color> | <interpolation>"]
 and property_shape_image_threshold = [%value.rec "<alpha-value>"]
 and property_shape_margin = [%value.rec
   "<extended-length> | <extended-percentage>"
@@ -1650,7 +1649,7 @@ and property_text_kashida = [%value.rec
   "'none' | 'horizontal' | 'vertical' | 'both'"
 ]
 and property_text_kashida_space = [%value.rec "'normal' | 'pre' | 'post'"]
-and property_text_decoration_color = [%value.rec "<color>"]
+and property_text_decoration_color = [%value.rec "<color> | <interpolation>"]
 /* Spec doesn't contain spelling-error and grammar-error: https://developer.mozilla.org/en-US/docs/Web/CSS/text-decoration-line but this list used to have them | 'spelling-error' | 'grammar-error'. Leaving this comment here for reference */
 /* and this definition has changed from the origianl, it might be a bug on the spec or our Generator,
    but simplifying to "|" simplifies it and solves the bug */
@@ -1679,7 +1678,7 @@ and property_text_decoration_thickness = [%value.rec
 and property_text_emphasis = [%value.rec
   "<'text-emphasis-style'> || <'text-emphasis-color'>"
 ]
-and property_text_emphasis_color = [%value.rec "<color>"]
+and property_text_emphasis_color = [%value.rec "<color> | <interpolation>"]
 and property_text_emphasis_position = [%value.rec
   "[ 'over' | 'under' ] && [ 'right' | 'left' ]?"
 ]
