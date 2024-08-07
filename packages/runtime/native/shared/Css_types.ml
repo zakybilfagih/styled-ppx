@@ -1487,11 +1487,10 @@ module Color = struct
     | #rectangular_color_space as rcs -> rectangular_color_space_to_string rcs
     | #polar_color_space as pcs -> polar_color_space_to_string pcs
     | `polar_with_hue (pcs, hs) ->
-      {js|polar-with-hue(|js}
-      ^ polar_color_space_to_string pcs
-      ^ {js|, |js}
+      polar_color_space_to_string pcs
+      ^ {js| |js}
       ^ hue_size_to_string hs
-      ^ {js|)|js}
+      ^ {js| hue|js}
 
   let rec toString (x : t) =
     match x with
@@ -2422,21 +2421,31 @@ module TableLayout = struct
 end
 
 module Border = struct
-  type t = {
+  type borderValue = {
     width : LineWidth.t;
     style : BorderStyle.t;
     color : Color.t;
   }
 
-  let make ?(width = `medium) ?(style = `none) ?(color = `currentColor) () =
-    { width; style; color }
+  type t =
+    [ `value of borderValue
+    | Var.t
+    | Cascading.t
+    ]
 
-  let toString { width; style; color } =
-    LineWidth.toString width
-    ^ {js| |js}
-    ^ BorderStyle.toString style
-    ^ {js| |js}
-    ^ Color.toString color
+  let make ?(width = `medium) ?(style = `none) ?(color = `currentColor) () =
+    `value { width; style; color }
+
+  let toString x =
+    match x with
+    | `value { width; style; color } ->
+      LineWidth.toString width
+      ^ {js| |js}
+      ^ BorderStyle.toString style
+      ^ {js| |js}
+      ^ Color.toString color
+    | #Var.t as var -> Var.toString var
+    | #Cascading.t as c -> Cascading.toString c
 end
 
 module BorderCollapse = struct
