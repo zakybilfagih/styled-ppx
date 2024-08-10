@@ -2436,12 +2436,31 @@ module TableLayout = struct
 end
 
 module Border = struct
-  let toString px style color =
-    LineWidth.toString px
-    ^ {js| |js}
-    ^ BorderStyle.toString style
-    ^ {js| |js}
-    ^ Color.toString color
+  type borderValue = {
+    width : LineWidth.t;
+    style : BorderStyle.t;
+    color : Color.t;
+  }
+
+  type t =
+    [ `value of borderValue
+    | Var.t
+    | Cascading.t
+    ]
+
+  let make ?(width = `medium) ?(style = `none) ?(color = `currentColor) () =
+    `value { width; style; color }
+
+  let toString x =
+    match x with
+    | `value { width; style; color } ->
+      LineWidth.toString width
+      ^ {js| |js}
+      ^ BorderStyle.toString style
+      ^ {js| |js}
+      ^ Color.toString color
+    | #Var.t as var -> Var.toString var
+    | #Cascading.t as c -> Cascading.toString c
 end
 
 module BorderCollapse = struct

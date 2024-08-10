@@ -771,32 +771,38 @@ let boxShadows x =
     ( {js|boxShadow|js},
       Kloth.Array.map_and_join ~sep:{js|, |js} ~f:Shadow.toString x )
 
-let border px style color =
-  Rule.declaration ({js|border|js}, Border.toString px style color)
+let border ?width ?style ?color () =
+  Rule.declaration
+    ({js|border|js}, Border.make ?width ?style ?color () |> Border.toString)
 
 let borderStyle x =
   Rule.declaration ({js|borderStyle|js}, BorderStyle.toString x)
 
-let borderLeft px style color =
-  Rule.declaration ({js|borderLeft|js}, Border.toString px style color)
+let borderLeft ?width ?style ?color () =
+  Rule.declaration
+    ({js|borderLeft|js}, Border.make ?width ?style ?color () |> Border.toString)
 
 let borderLeftStyle x =
   Rule.declaration ({js|borderLeftStyle|js}, BorderStyle.toString x)
 
-let borderRight px style color =
-  Rule.declaration ({js|borderRight|js}, Border.toString px style color)
+let borderRight ?width ?style ?color () =
+  Rule.declaration
+    ({js|borderRight|js}, Border.make ?width ?style ?color () |> Border.toString)
 
 let borderRightStyle x =
   Rule.declaration ({js|borderRightStyle|js}, BorderStyle.toString x)
 
-let borderTop px style color =
-  Rule.declaration ({js|borderTop|js}, Border.toString px style color)
+let borderTop ?width ?style ?color () =
+  Rule.declaration
+    ({js|borderTop|js}, Border.make ?width ?style ?color () |> Border.toString)
 
 let borderTopStyle x =
   Rule.declaration ({js|borderTopStyle|js}, BorderStyle.toString x)
 
-let borderBottom px style color =
-  Rule.declaration ({js|borderBottom|js}, Border.toString px style color)
+let borderBottom ?width ?style ?color () =
+  Rule.declaration
+    ( {js|borderBottom|js},
+      Border.make ?width ?style ?color () |> Border.toString )
 
 let borderBottomStyle x =
   Rule.declaration ({js|borderBottomStyle|js}, BorderStyle.toString x)

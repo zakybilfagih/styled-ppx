@@ -51,7 +51,7 @@ If this test fail means that the module is not in sync with the ppx
   
   let c = CSS.hex("e15a46");
   (CSS.backgroundColor(c): CSS.rule);
-  CSS.unsafe({js|border|js}, {js|none|js});
+  CSS.border(~width=?None, ~style=?Some(`none), ~color=?None, ());
   CSS.unsafe({js|bottom|js}, {js|unset|js});
   CSS.boxShadow(`none);
   CSS.unsafe({js|breakInside|js}, {js|avoid|js});

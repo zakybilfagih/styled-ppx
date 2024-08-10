@@ -142,6 +142,10 @@ let render_float = (~loc, number) =>
 let render_percentage = (~loc, number) => [%expr
   `percent([%e render_float(~loc, number)])
 ];
+let render_percentage_interp = (~loc) =>
+  fun
+  | `Interpolation(name) => render_variable(~loc, name)
+  | `Percentage(v) => render_percentage(~loc, v);
 
 let to_camel_case = txt =>
   (
@@ -183,6 +187,7 @@ let render_css_global_values = (~loc, name, value) => {
 
 let variant_to_expression = (~loc) =>
   fun
+  | `Interpolation(v) => render_variable(~loc, v)
   | `Anywhere => id([%expr `anywhere])
   | `Auto => id([%expr `auto])
   | `Baseline => id([%expr `baseline])
@@ -1039,9 +1044,8 @@ let render_var = (~loc, string) => {
   [%expr `var([%e string])];
 };
 
-let rec render_color = (~loc, value) =>
-  switch ((value: Types.color)) {
-  | `Interpolation(v) => render_variable(~loc, v)
+let rec render_color = (~loc, value: Types.color) =>
+  switch (value) {
   | `Hex_color(hex) => id([%expr `hex([%e render_string(~loc, hex)])])
   | `Named_color(color) => render_named_color(~loc, color)
   | `CurrentColor => id([%expr `currentColor])
@@ -1057,6 +1061,10 @@ let rec render_color = (~loc, value) =>
   | `Function_hsla(_)
   | `Deprecated_system_color(_) => raise(Unsupported_feature)
   }
+and render_color_interp = (~loc) =>
+  fun
+  | `Interpolation(name) => render_variable(~loc, name)
+  | `Color(ls) => render_color(~loc, ls)
 
 and render_function_color_mix = (~loc, value: Types.function_color_mix) => {
   let render_rectangular_color_space = (x: Types.rectangular_color_space) => {
@@ -1109,10 +1117,10 @@ and render_function_color_mix = (~loc, value: Types.function_color_mix) => {
     | Some(percentage) =>
       [%expr
        (
-         [%e render_color(~loc, color)],
-         Some([%e render_percentage(~loc, percentage)]),
+         [%e render_color_interp(~loc, color)],
+         Some([%e render_percentage_interp(~loc, percentage)]),
        )]
-    | None => [%expr ([%e render_color(~loc, color)], None)]
+    | None => [%expr ([%e render_color_interp(~loc, color)], None)]
     };
   };
 
@@ -1128,7 +1136,7 @@ let color =
   monomorphic(
     Property_parser.property_color,
     (~loc) => [%expr CSS.color],
-    render_color,
+    render_color_interp,
   );
 
 let opacity =
@@ -1240,11 +1248,6 @@ let image_rendering =
     [%expr CSS.imageRendering]
   );
 
-let render_color_interp = (~loc) =>
-  fun
-  | `Interpolation(name) => render_variable(~loc, name)
-  | `Color(ls) => render_color(~loc, ls);
-
 let render_length_interp = (~loc) =>
   fun
   | `Extended_length(l) => render_extended_length(~loc, l)
@@ -1300,7 +1303,7 @@ let background_color =
   monomorphic(
     Property_parser.property_background_color,
     (~loc) => [%expr CSS.backgroundColor],
-    render_color,
+    render_color_interp,
   );
 
 let _render_color_stop_length = (~loc, value: Types.color_stop_length) => {
@@ -1321,10 +1324,10 @@ let render_color_stop_angle = (~loc, value: Types.color_stop_angle) => {
 let render_angular_color_stop = (~loc, value: Types.angular_color_stop) => {
   switch (value) {
   | (color, None) =>
-    let color = render_color(~loc, color);
+    let color = render_color_interp(~loc, color);
     [%expr ([%e color], None)];
   | (color, Some(angle)) =>
-    let color = render_color(~loc, color);
+    let color = render_color_interp(~loc, color);
     let angle = render_color_stop_angle(~loc, angle);
     [%expr ([%e color], Some([%e angle]))];
   };
@@ -1339,14 +1342,14 @@ let render_color_stop_list = (~loc, value: Types.color_stop_list) => {
          [%expr (None, Some([%e length]))];
        | `Static_0(Some(color), length_percentage) =>
          let length = render_length_percentage(~loc, length_percentage);
-         let color = render_color(~loc, color);
+         let color = render_color_interp(~loc, color);
          [%expr (Some([%e color]), Some([%e length]))];
        | `Static_1(color, None) =>
-         let color = render_color(~loc, color);
+         let color = render_color_interp(~loc, color);
          [%expr (Some([%e color]), None)];
        | `Static_1(color, Some(length_percentage)) =>
          let length = render_length_percentage(~loc, length_percentage);
-         let color = render_color(~loc, color);
+         let color = render_color_interp(~loc, color);
          [%expr (Some([%e color]), Some([%e length]))];
        }
      )
@@ -1737,7 +1740,11 @@ let render_background = (~loc, background: Types.property_background) => {
   let render_final_layer = (value: Types.final_bg_layer) => {
     let (color, image, position, repeat_style, attachment, clip, origin) = value;
     [
-      render_layer(color, [%expr CSS.backgroundColor], render_color(~loc)),
+      render_layer(
+        color,
+        [%expr CSS.backgroundColor],
+        render_color_interp(~loc),
+      ),
       render_layer(
         image,
         [%expr CSS.backgroundImage],
@@ -1789,28 +1796,28 @@ let border_top_color =
   monomorphic(
     Property_parser.property_border_top_color,
     (~loc) => [%expr CSS.borderTopColor],
-    render_color,
+    render_color_interp,
   );
 
 let border_right_color =
   monomorphic(
     Property_parser.property_border_right_color,
     (~loc) => [%expr CSS.borderRightColor],
-    render_color,
+    render_color_interp,
   );
 
 let border_bottom_color =
   monomorphic(
     Property_parser.property_border_bottom_color,
     (~loc) => [%expr CSS.borderBottomColor],
-    render_color,
+    render_color_interp,
   );
 
 let border_left_color =
   monomorphic(
     Property_parser.property_border_left_color,
     (~loc) => [%expr CSS.borderLeftColor],
-    render_color,
+    render_color_interp,
   );
 
 let border_color =
@@ -1819,7 +1826,7 @@ let border_color =
     (~loc) => [%expr CSS.borderColor],
     (~loc) =>
       fun
-      | [c] => render_color(~loc, c)
+      | [c] => render_color_interp(~loc, c)
       | _ => raise(Unsupported_feature),
   );
 
@@ -1850,7 +1857,7 @@ let border_style =
     variant_to_expression,
   );
 
-let render_line_width = (~loc, value: Types.line_width) =>
+let render_line_width = (~loc, value) =>
   switch (value) {
   | `Extended_length(l) => render_extended_length(~loc, l)
   | `Thick => [%expr `thick]
@@ -1921,37 +1928,50 @@ let direction_to_border = (~loc) =>
   | Right => [%expr CSS.borderRight]
   | Top => [%expr CSS.borderTop];
 
-let direction_to_fn_name = (~loc) =>
-  fun
-  | All => [%expr {js|border|js}]
-  | Left => [%expr {js|borderLeft|js}]
-  | Bottom => [%expr {js|borderBottom|js}]
-  | Right => [%expr {js|borderRight|js}]
-  | Top => [%expr {js|borderTop|js}];
-
-let render_border = (~loc, ~direction: borderDirection, border) => {
+let render_border =
+    (~loc, ~direction: borderDirection, border: Types.property_border) => {
+  let borderFn = direction_to_border(~loc, direction);
   switch (border) {
-  | `None =>
-    let borderFn = direction_to_fn_name(~loc, direction);
-    [[%expr CSS.unsafe([%e borderFn], {js|none|js})]];
-  | `Xor(`Interpolation(name)) =>
-    let borderFn = direction_to_border(~loc, direction);
-    [[%expr [%e borderFn]([%e render_variable(~loc, name)])]];
-  /* bs-css doesn't support border: 1px; */
-  | `Xor(_) => raise(Unsupported_feature)
-  /* bs-css doesn't support border: 1px solid; */
-  | `Static_0(_) => raise(Unsupported_feature)
-  | `Static_1(width, style, color) =>
-    let borderFn = direction_to_border(~loc, direction);
-    [
+  | `Border_value_no_interp(width, style, color) => [
       [%expr
         [%e borderFn](
-          [%e render_line_width_interp(~loc, width)],
-          [%e render_border_style_interp(~loc, style)],
-          [%e render_color_interp(~loc, color)],
+          ~width=?[%e render_option(~loc, render_line_width, width)],
+          ~style=?[%e render_option(~loc, variant_to_expression, style)],
+          ~color=?[%e render_option(~loc, render_color, color)],
+          (),
         )
       ],
-    ];
+    ]
+  | `Border_value(v) =>
+    switch (v) {
+    | `Xor(width) => [
+        [%expr
+          [%e borderFn](
+            ~width=[%e render_line_width_interp(~loc, width)],
+            (),
+          )
+        ],
+      ]
+    | `Static_0(width, style) => [
+        [%expr
+          [%e borderFn](
+            ~width=[%e render_line_width_interp(~loc, width)],
+            ~style=[%e render_border_style_interp(~loc, style)],
+            (),
+          )
+        ],
+      ]
+    | `Static_1(width, style, color) => [
+        [%expr
+          [%e borderFn](
+            ~width=[%e render_line_width_interp(~loc, width)],
+            ~style=[%e render_border_style_interp(~loc, style)],
+            ~color=[%e render_color_interp(~loc, color)],
+            (),
+          )
+        ],
+      ]
+    }
   };
 };
 
@@ -1987,7 +2007,7 @@ let outline_color =
   monomorphic(
     Property_parser.property_outline_color,
     (~loc) => [%expr CSS.outlineColor],
-    render_color,
+    render_color_interp,
   );
 
 let outline_offset =
@@ -2607,7 +2627,7 @@ let text_decoration_color =
   monomorphic(
     Property_parser.property_text_decoration_color,
     (~loc) => [%expr CSS.textDecorationColor],
-    render_color,
+    render_color_interp,
   );
 
 let render_text_decoration_thickness = (~loc) =>
@@ -2716,7 +2736,7 @@ let text_emphasis_color =
   monomorphic(
     Property_parser.property_text_emphasis_color,
     (~loc) => [%expr CSS.textEmphasisColor],
-    render_color,
+    render_color_interp,
   );
 
 let text_emphasis =
@@ -4331,7 +4351,7 @@ let render_drop_shadow = (~loc, value: Types.function_drop_shadow) => {
     switch (color) {
     /* We default to currentColor since code-generation becomes very easy */
     | None => [%expr `currentColor]
-    | Some(c) => render_color(~loc, c)
+    | Some(c) => render_color_interp(~loc, c)
     };
   [%expr
    `dropShadow((

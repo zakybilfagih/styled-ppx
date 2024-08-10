@@ -28,7 +28,14 @@ let tests =
     (
       "border: 1px solid $(Color.Border.alpha)",
       [%expr [%css "border: 1px solid $(Color.Border.alpha)"]],
-      [%expr CSS.border(`pxFloat(1.), `solid, Color.Border.alpha)],
+      [%expr
+        CSS.border(
+          ~width=`pxFloat(1.),
+          ~style=`solid,
+          ~color=Color.Border.alpha,
+          (),
+        )
+      ],
     ),
     (
       "outline: 1px solid $(Color.Border.alpha)",
@@ -38,7 +45,14 @@ let tests =
     (
       "border-bottom: 0px solid $(Color.Border.alpha)",
       [%expr [%css "border-bottom: 0px solid $(Color.Border.alpha)"]],
-      [%expr CSS.borderBottom(`pxFloat(0.), `solid, Color.Border.alpha)],
+      [%expr
+        CSS.borderBottom(
+          ~width=`pxFloat(0.),
+          ~style=`solid,
+          ~color=Color.Border.alpha,
+          (),
+        )
+      ],
     ),
     (
       "width: $(width)",
