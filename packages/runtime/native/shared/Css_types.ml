@@ -1114,6 +1114,22 @@ module Transition = struct
     | #None.t -> None.toString
 end
 
+module TransitionProperty = struct
+  type t =
+    [ `value of string array
+    | None.t
+    | Cascading.t
+    | Var.t
+    ]
+
+  let toString x =
+    match x with
+    | `value v -> Kloth.Array.map_and_join ~sep:{js|, |js} ~f:Fun.id v
+    | #None.t -> None.toString
+    | #Cascading.t -> None.toString
+    | #Var.t -> None.toString
+end
+
 module Animation = struct
   type animationValue = {
     duration : Time.t;

@@ -850,7 +850,8 @@ let transitionDuration i =
 let transitionTimingFunction x =
   Rule.declaration ({js|transitionTimingFunction|js}, TimingFunction.toString x)
 
-let transitionProperty x = Rule.declaration ({js|transitionProperty|js}, x)
+let transitionProperty x =
+  Rule.declaration ({js|transitionProperty|js}, TransitionProperty.toString x)
 
 let animation ?duration ?delay ?direction ?timingFunction ?fillMode ?playState
   ?iterationCount ?name () =

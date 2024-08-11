@@ -16,10 +16,10 @@ If this test fail means that the module is not in sync with the ppx
 
   $ dune describe pp ./input.re | sed '1,/^];$/d'
   
-  CSS.transitionProperty({js|none|js});
-  CSS.transitionProperty({js|all|js});
-  CSS.transitionProperty({js|width|js});
-  CSS.unsafe({js|transitionProperty|js}, {js|width, height|js});
+  CSS.transitionProperty(`none);
+  CSS.transitionProperty(`value([|{js|all|js}|]));
+  CSS.transitionProperty(`value([|{js|width|js}|]));
+  CSS.transitionProperty(`value([|{js|width|js}, {js|height|js}|]));
   CSS.transitionDuration(`s(0));
   CSS.transitionDuration(`s(1));
   CSS.transitionDuration(`ms(100));

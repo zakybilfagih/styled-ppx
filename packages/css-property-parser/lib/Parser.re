@@ -836,7 +836,7 @@ and property_animation_name = [%value.rec
 and property_animation_play_state = [%value.rec
   "[ <single-animation-play-state> ]#"
 ]
-and property_animation_timing_function = [%value.rec "[ <timing-function> ]#"]
+and property_animation_timing_function = [%value.rec "[ <timing-function> | <interpolation> ]#"]
 and property_appearance = [%value.rec
   "'none' | 'auto' | 'button' | 'textfield' | 'menulist-button' | <compat-auto>"
 ]
@@ -1731,12 +1731,12 @@ and property_transform_style = [%value.rec "'flat' | 'preserve-3d'"]
 and property_transition = [%value.rec
   "[ <single-transition> | <single-transition-no-interp> ]# | <interpolation>"
 ]
-and property_transition_delay = [%value.rec "[ <extended-time> ]#"]
-and property_transition_duration = [%value.rec "[ <extended-time> ]#"]
+and property_transition_delay = [%value.rec "[ <extended-time> | <interpolation> ]#"]
+and property_transition_duration = [%value.rec "[ <extended-time> | <interpolation> ]#"]
 and property_transition_property = [%value.rec
-  "'none' | [ <single-transition-property> ]#"
+  "[ <single-transition-property> | <interpolation> ]# | 'none'"
 ]
-and property_transition_timing_function = [%value.rec "[ <timing-function> ]#"]
+and property_transition_timing_function = [%value.rec "[ <timing-function> | <interpolation> ]#"]
 and property_translate = [%value.rec
   "'none' | <extended-length> | <extended-percentage> [ <extended-length> | <extended-percentage> [ <extended-length> ]? ]?"
 ]
@@ -1853,17 +1853,14 @@ and single_animation_fill_mode = [%value.rec
 and single_animation_iteration_count = [%value.rec "'infinite' | <number>"]
 and single_animation_play_state = [%value.rec "'running' | 'paused'"]
 and single_transition_no_interp = [%value.rec
-  "[ <single-transition-property-no-interp> | 'none' ] || <extended-time-no-interp> || <timing-function-no-interp> || <extended-time-no-interp>"
+  "[ <single-transition-property> | 'none' ] || <extended-time> || <timing-function> || <extended-time>"
 ]
 and single_transition = [%value.rec
-  "[ [<single-transition-property> | 'none'] <extended-time>]
-  | [ [<single-transition-property> | 'none'] <extended-time> <timing-function>]
-  | [ [<single-transition-property> | 'none'] <extended-time> <timing-function> <extended-time>]"
+  "[ [<single-transition-property> | 'none' | <interpolation> ] [ <extended-time> | <interpolation> ] ]
+  | [ [<single-transition-property> | 'none' | <interpolation> ] [ <extended-time> | <interpolation> ] [ <timing-function> | <interpolation> ] ]
+  | [ [<single-transition-property> | 'none' | <interpolation> ] [ <extended-time> | <interpolation> ] [ <timing-function> | <interpolation> ] [ <extended-time> | <interpolation>] ]"
 ]
 and single_transition_property = [%value.rec
-  "<custom-ident> | <interpolation> | 'all'"
-]
-and single_transition_property_no_interp = [%value.rec
   "<custom-ident> | 'all'"
 ]
 and size = [%value.rec
@@ -1904,7 +1901,7 @@ and target = [%value.rec
   "<target-counter()> | <target-counters()> | <target-text()>"
 ]
 and extended_length = [%value.rec
-  "<length> | <calc()> | <interpolation> | <min()> | <max()>"
+  "<length> | <calc()> | <min()> | <max()>"
 ]
 and length_percentage = [%value.rec
   "<extended-length> | <extended-percentage>"
@@ -1916,18 +1913,12 @@ and extended_angle = [%value.rec
   "<angle> | <calc()> | <interpolation> | <min()> | <max()>"
 ]
 and extended_time = [%value.rec
-  "<time> | <calc()> | <interpolation> | <min()> | <max()>"
-]
-and extended_time_no_interp = [%value.rec
   "<time> | <calc()> | <min()> | <max()>"
 ]
 and extended_percentage = [%value.rec
   "<percentage> | <calc()> | <interpolation> | <min()> | <max()> "
 ]
 and timing_function = [%value.rec
-  "'linear' | <cubic-bezier-timing-function> | <step-timing-function> | <interpolation>"
-]
-and timing_function_no_interp = [%value.rec
   "'linear' | <cubic-bezier-timing-function> | <step-timing-function>"
 ]
 and top = [%value.rec "<extended-length> | 'auto'"]

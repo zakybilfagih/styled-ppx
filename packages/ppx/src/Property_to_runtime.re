@@ -419,17 +419,16 @@ and render_time_as_int = (~loc) =>
       [%expr `s([%e render_integer(~loc, value)])];
     }
 
-and render_extended_time_no_interp = (~loc) =>
+and render_extended_time = (~loc) =>
   fun
   | `Time(t) => render_time_as_int(~loc, t)
   | `Function_calc(fc) => render_function_calc(~loc, fc)
   | `Function_min(values) => render_function_min(~loc, values)
   | `Function_max(values) => render_function_max(~loc, values)
 
-and render_extended_time = (~loc) =>
+and render_extended_time_interp = (~loc) =>
   fun
-  | #Types.extended_time_no_interp as x =>
-    render_extended_time_no_interp(~loc, x)
+  | `Extended_time(x) => render_extended_time(~loc, x)
   | `Interpolation(v) => render_variable(~loc, v)
 
 and render_calc_value = (~loc, calc_value) => {
@@ -447,7 +446,6 @@ and render_extended_length = (~loc) =>
   | `Function_calc(fc) => render_function_calc(~loc, fc)
   | `Function_min(values) => render_function_min(~loc, values)
   | `Function_max(values) => render_function_max(~loc, values)
-  | `Interpolation(i) => render_variable(~loc, i)
 and render_extended_percentage = (~loc) =>
   fun
   | `Percentage(p) => render_percentage(~loc, p)
@@ -3008,18 +3006,17 @@ let backface_visibility =
     [%expr CSS.backfaceVisibility]
   );
 
-let render_single_transition_property_no_interp = (~loc, value) => {
+let render_single_transition_property = (~loc, value) => {
   switch (value) {
   | `All => render_string(~loc, "all")
   | `Custom_ident(v) => render_string(~loc, v)
   };
 };
-
-let render_single_transition_property = (~loc, value) => {
+let render_single_transition_property_interp = (~loc, value) => {
   switch (value) {
-  | #Types.single_transition_property_no_interp as x =>
-    render_single_transition_property_no_interp(~loc, x)
   | `Interpolation(v) => render_variable(~loc, v)
+  | `Single_transition_property(v) =>
+    render_single_transition_property(~loc, v)
   };
 };
 
@@ -3030,12 +3027,16 @@ let transition_property =
     (~loc) => [%expr CSS.transitionProperty],
     (~loc) =>
       fun
-      | `None => render_string(~loc, "none")
-      | `Single_transition_property([transition]) =>
-        render_single_transition_property(~loc, transition)
-      /* bs-css unsupports multiple transition_properties,
-         but should be easy to bypass with string concatenation */
-      | `Single_transition_property(_) => raise(Unsupported_feature),
+      | `None => [%expr `none]
+      | `Xor(transitions) => {
+          let ts =
+            transitions
+            |> List.map(transition =>
+                 render_single_transition_property_interp(~loc, transition)
+               )
+            |> Builder.pexp_array(~loc);
+          [%expr `value([%e ts])];
+        },
   );
 
 let transition_duration =
@@ -3045,7 +3046,7 @@ let transition_duration =
     (~loc) =>
       fun
       | [] => [%expr `none]
-      | [one] => render_extended_time(~loc, one)
+      | [one] => render_extended_time_interp(~loc, one)
       | _ => raise(Unsupported_feature),
   );
 
@@ -3092,16 +3093,16 @@ let render_steps_function = (~loc) =>
     ]
   | `Steps(_, None) => raise(Unsupported_feature);
 
-let render_timing_no_interp = (~loc) =>
+let render_timing = (~loc) =>
   fun
   | `Linear => [%expr `linear]
   | `Cubic_bezier_timing_function(v) =>
     render_cubic_bezier_timing_function(~loc, v)
   | `Step_timing_function(v) => render_steps_function(~loc, v);
 
-let render_timing = (~loc) =>
+let render_timing_interp = (~loc) =>
   fun
-  | #Types.timing_function_no_interp as x => render_timing_no_interp(~loc, x)
+  | `Timing_function(v) => render_timing(~loc, v)
   | `Interpolation(v) => render_variable(~loc, v);
 
 let transition_timing_function =
@@ -3110,7 +3111,7 @@ let transition_timing_function =
     (~loc) => [%expr CSS.transitionTimingFunction],
     (~loc) =>
       fun
-      | [t] => render_timing(~loc, t)
+      | [t] => render_timing_interp(~loc, t)
       | _ => raise(Unsupported_feature),
   );
 
@@ -3120,13 +3121,14 @@ let transition_delay =
     (~loc) => [%expr CSS.transitionDelay],
     (~loc) =>
       fun
-      | [`Time(t)] => render_time_as_int(~loc, t)
+      | [`Extended_time(t)] => render_extended_time(~loc, t)
       | [`Interpolation(v)] => render_variable(~loc, v)
       | _ => raise(Unsupported_feature),
   );
 
-let render_transition_property = (~loc) =>
+let render_transition_property_interp = (~loc) =>
   fun
+  | `Interpolation(v) => render_variable(~loc, v)
   | `None => render_string(~loc, "none")
   | `Single_transition_property(x) =>
     render_single_transition_property(~loc, x);
@@ -3136,25 +3138,25 @@ let render_single_transition = (~loc) =>
   | `Static_0(property, duration) => {
       [%expr
        CSS.Transition.shorthand(
-         ~duration=[%e render_extended_time(~loc, duration)],
-         [%e render_transition_property(~loc, property)],
+         ~duration=[%e render_extended_time_interp(~loc, duration)],
+         [%e render_transition_property_interp(~loc, property)],
        )];
     }
   | `Static_1(property, duration, timingFunction) => {
       [%expr
        CSS.Transition.shorthand(
-         ~duration=[%e render_extended_time(~loc, duration)],
-         ~timingFunction=[%e render_timing(~loc, timingFunction)],
-         [%e render_transition_property(~loc, property)],
+         ~duration=[%e render_extended_time_interp(~loc, duration)],
+         ~timingFunction=[%e render_timing_interp(~loc, timingFunction)],
+         [%e render_transition_property_interp(~loc, property)],
        )];
     }
   | `Static_2(property, duration, timingFunction, delay) => {
       [%expr
        CSS.Transition.shorthand(
-         ~duration=[%e render_extended_time(~loc, duration)],
-         ~delay=[%e render_extended_time(~loc, delay)],
-         ~timingFunction=[%e render_timing(~loc, timingFunction)],
-         [%e render_transition_property(~loc, property)],
+         ~duration=[%e render_extended_time_interp(~loc, duration)],
+         ~delay=[%e render_extended_time_interp(~loc, delay)],
+         ~timingFunction=[%e render_timing_interp(~loc, timingFunction)],
+         [%e render_transition_property_interp(~loc, property)],
        )];
     };
 
@@ -3165,25 +3167,18 @@ let render_single_transition_no_interp =
     ) => {
   let property =
     switch (
-      Option.value(
-        property,
-        ~default=`Single_transition_property_no_interp(`All),
-      )
+      Option.value(property, ~default=`Single_transition_property(`All))
     ) {
     | `None => render_string(~loc, "none")
-    | `Single_transition_property_no_interp(x) =>
-      render_single_transition_property_no_interp(~loc, x)
+    | `Single_transition_property(x) =>
+      render_single_transition_property(~loc, x)
     };
 
   [%expr
    CSS.Transition.shorthand(
-     ~duration=?[%e
-       render_option(~loc, render_extended_time_no_interp, duration)
-     ],
-     ~delay=?[%e render_option(~loc, render_extended_time_no_interp, delay)],
-     ~timingFunction=?[%e
-       render_option(~loc, render_timing_no_interp, timingFunction)
-     ],
+     ~duration=?[%e render_option(~loc, render_extended_time, duration)],
+     ~delay=?[%e render_option(~loc, render_extended_time, delay)],
+     ~timingFunction=?[%e render_option(~loc, render_timing, timingFunction)],
      [%e property],
    )];
 };
@@ -3260,7 +3255,7 @@ let animation_timing_function =
     (~loc) => [%expr CSS.animationTimingFunction],
     (~loc) =>
       fun
-      | [t] => render_timing(~loc, t)
+      | [t] => render_timing_interp(~loc, t)
       | _ => raise(Unsupported_feature),
   );
 
