@@ -446,6 +446,10 @@ and render_extended_length = (~loc) =>
   | `Function_calc(fc) => render_function_calc(~loc, fc)
   | `Function_min(values) => render_function_min(~loc, values)
   | `Function_max(values) => render_function_max(~loc, values)
+and render_extended_length_interp = (~loc) =>
+  fun
+  | `Interpolation(values) => render_variable(~loc, values)
+  | `Extended_length(values) => render_extended_length(~loc, values)
 and render_extended_percentage = (~loc) =>
   fun
   | `Percentage(p) => render_percentage(~loc, p)
@@ -4339,9 +4343,9 @@ let direction = unsupportedProperty(Property_parser.property_direction);
 
 let render_drop_shadow = (~loc, value: Types.function_drop_shadow) => {
   let (offset1, offset2, offset3, color) = value;
-  let offset1Expr = render_extended_length(~loc, offset1);
-  let offset2Expr = render_extended_length(~loc, offset2);
-  let offset3Expr = render_extended_length(~loc, offset3);
+  let offset1Expr = render_extended_length_interp(~loc, offset1);
+  let offset2Expr = render_extended_length_interp(~loc, offset2);
+  let offset3Expr = render_extended_length_interp(~loc, offset3);
   let colorExpr =
     switch (color) {
     /* We default to currentColor since code-generation becomes very easy */
