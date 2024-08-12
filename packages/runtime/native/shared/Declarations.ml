@@ -416,7 +416,7 @@ let objectPosition2 x y =
     ( {js|objectPosition|js},
       Position.toString x ^ {js| |js} ^ Position.toString y )
 
-let opacity x = Rule.declaration ({js|opacity|js}, Kloth.Float.to_string x)
+let opacity x = Rule.declaration ({js|opacity|js}, AlphaValue.toString x)
 
 let outline size style color =
   Rule.declaration

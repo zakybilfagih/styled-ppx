@@ -1,11 +1,19 @@
 /* CSS Fill and Stroke Module Level 3 */
-  /* [%css {|fill: url(foo.png), url(bar.svg)|}]; */
-  /* [%css {|fill: top left / 50% 60%|}]; */
-  /* [%css {|fill: border-box|}]; */
-  /* [%css {|fill: border-box padding-box|}]; */
-  /* [%css {|fill: url(foo.png) bottom right / cover padding-box content-box|}]; */
-  /* [%css {|fill-rule: nonzero|}]; */
-  /* [%css {|fill-rule: evenodd|}]; */
+/* keywords */
+[%css {|fill: none|}];
+[%css {|fill: context-fill|}];
+[%css {|fill: context-stroke|}];
+/* <color> values */
+[%css {|fill: red|}];
+[%css {|fill: hsl(120deg 75% 25% / 60%)|}];
+/* <url> values */
+[%css {|fill: url(#gradientElementID)|}];
+[%css {|fill: url(star.png)|}];
+/* <url> with fallback */
+[%css {|fill: url(#gradientElementID) blue|}];
+[%css {|fill: url(star.png) none|}];
+[%css {|fill-rule: nonzero|}];
+[%css {|fill-rule: evenodd|}];
   /* [%css {|fill-break: bounding-box|}]; */
   /* [%css {|fill-break: slice|}]; */
   /* [%css {|fill-break: clone|}]; */

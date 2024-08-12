@@ -1326,6 +1326,52 @@ module Cursor = struct
     | #Cascading.t as c -> Cascading.toString c
 end
 
+module AlphaValue = struct
+  type alpha_value =
+    [ `num of float
+    | Percentage.t
+    ]
+
+  type calc_value =
+    [ alpha_value
+    | `min of t array
+    | `max of t array
+    | `add of calc_value * calc_value
+    | `sub of calc_value * calc_value
+    | `mult of calc_value * calc_value
+    | `div of calc_value * float
+    | `calc of calc_value
+    | `num of float
+    ]
+
+  and t =
+    [ alpha_value
+    | `calc of calc_value
+    | `min of t array
+    | `max of t array
+    ]
+
+  let rec toString (x : t) =
+    match x with
+    | `num x -> Kloth.Float.to_string x
+    | #Percentage.t as pc -> Percentage.toString pc
+    | `calc calc -> calc_value_to_string calc
+    | (`min _ | `max _) as x -> minmax_to_string x
+
+  and minmax_to_string = function
+    | (`calc _ | `min _ | `max _ | `num _) as x ->
+      Calc.min_max_num_to_string toString x
+    | #alpha_value as x -> toString x
+
+  and calc_value_to_string x =
+    match x with
+    | `num x -> Kloth.Float.to_string x
+    | `calc calc -> calc_value_to_string calc
+    | (`add _ | `sub _ | `mult _ | `div _ | `min _ | `max _) as x ->
+      Calc.min_max_to_string calc_value_to_string minmax_to_string x
+    | #alpha_value as x -> toString x
+end
+
 module Color = struct
   type rgb = int * int * int
 
@@ -1349,28 +1395,7 @@ module Color = struct
     | `max of 'a array
     ]
 
-  type alpha =
-    [ `num of float
-    | Percentage.t
-    ]
-
-  type alpha_with_calc =
-    [ alpha
-    | alpha calc_min_max
-    ]
-
-  type rgba = int * int * int * alpha_with_calc
-
-  let string_of_alpha : alpha -> string = function
-    | `num x -> Kloth.Float.to_string x
-    | #Percentage.t as pc -> Percentage.toString pc
-
-  let string_of_alpha_with_calc (x : alpha_with_calc) =
-    match x with
-    | `num _ as alpha -> string_of_alpha alpha
-    | #Percentage.t as alpha -> string_of_alpha alpha
-    | (`calc _ | `min _ | `max _) as x ->
-      Calc.min_max_num_to_string string_of_alpha x
+  type rgba = int * int * int * AlphaValue.t
 
   let rgba_to_string r g b a =
     {js|rgba(|js}
@@ -1380,7 +1405,7 @@ module Color = struct
     ^ {js|, |js}
     ^ Kloth.Int.to_string b
     ^ {js|, |js}
-    ^ string_of_alpha_with_calc a
+    ^ AlphaValue.toString a
     ^ {js|)|js}
 
   type percent_with_calc =
@@ -1417,7 +1442,7 @@ module Color = struct
     ^ {js|)|js}
 
   type hsla =
-    angle_with_calc * percent_with_calc * percent_with_calc * alpha_with_calc
+    angle_with_calc * percent_with_calc * percent_with_calc * AlphaValue.t
 
   let hsla_to_string h s l a =
     {js|hsla(|js}
@@ -1427,7 +1452,7 @@ module Color = struct
     ^ {js|, |js}
     ^ string_of_percent_with_calc l
     ^ {js|, |js}
-    ^ string_of_alpha_with_calc a
+    ^ AlphaValue.toString a
     ^ {js|)|js}
 
   type polar_color_space =
@@ -3782,6 +3807,20 @@ module Content = struct
 end
 
 module SVG = struct
+  module UrlWithFallback = struct
+    type t = [ `urlWithFallback of string * [ Color.t | None.t ] ]
+
+    let toString x =
+      match x with
+      | `urlWithFallback (url, color) ->
+        ({js|url(|js} ^ url)
+        ^ {js|) |js}
+        ^
+        (match color with
+        | #Color.t as c -> Color.toString c
+        | #None.t -> None.toString)
+  end
+
   module Fill = struct
     type t =
       [ None.t
@@ -3789,6 +3828,7 @@ module SVG = struct
       | `contextStroke
       | Color.t
       | Url.t
+      | UrlWithFallback.t
       ]
 
     let contextFill = `contextFill
@@ -3801,6 +3841,7 @@ module SVG = struct
       | `contextStroke -> {js|context-stroke|js}
       | #Color.t as c -> Color.toString c
       | #Url.t as u -> Url.toString u
+      | #UrlWithFallback.t as u -> UrlWithFallback.toString u
   end
 end
 
@@ -3852,18 +3893,16 @@ module ZIndex = struct
     | #Cascading.t as c -> Cascading.toString c
 end
 
-module AlphaValue = struct
+module StrokeOpacity = struct
   type t =
-    [ `num of float
-    | Percentage.t
+    [ AlphaValue.t
     | Var.t
     | Cascading.t
     ]
 
   let toString x =
     match x with
-    | `num x -> Kloth.Float.to_string x
-    | #Percentage.t as p -> Percentage.toString p
+    | #AlphaValue.t as x -> AlphaValue.toString x
     | #Var.t as var -> Var.toString var
     | #Cascading.t as c -> Cascading.toString c
 end

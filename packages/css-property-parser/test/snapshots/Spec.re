@@ -11,6 +11,16 @@ and _legacy_linear_gradient = [%value.rec
 ]
 and property_height = [%value.rec
   "'auto' | <extended-length> | <extended-percentage> | 'min-content' | 'max-content' | 'fit-content' | fit-content( <extended-length> | <extended-percentage> )"
+]
+
+
+and calc_product = [%value.rec
+  "<calc-value> [ '*' <calc-value> | '/' <number> ]*"
+]
+and calc_sum = [%value.rec "<calc-product> [ [ '+' | '-' ] <calc-product> ]*"]
+/* and calc_value = [%value.rec "<number> | <dimension> | <extended-percentage> | <calc>"] */
+and calc_value = [%value.rec
+  "<number> | <extended-length> | <extended-percentage> | <extended-angle> | <extended-time>"
 ];
 
 let check_map =

@@ -70,6 +70,7 @@ let card = [%cx
   margin: 10px;
   border: 2px dotted;
   font-size: 1.5em;
+  opacity: calc(2 / 3);
   |}
 ];
 

@@ -1141,16 +1141,18 @@ let color =
     render_color_interp,
   );
 
+let render_alpha_value = (~loc, value: Types.alpha_value) => {
+  switch (value) {
+  | `Number(n) => [%expr `num([%e render_float(~loc, n)])]
+  | `Extended_percentage(pct) => render_extended_percentage(~loc, pct)
+  };
+};
+
 let opacity =
   monomorphic(
     Property_parser.property_opacity,
     (~loc) => [%expr CSS.opacity],
-    (~loc) =>
-      fun
-      | `Number(number) => render_float(~loc, number)
-      | `Extended_percentage(`Percentage(number)) =>
-        render_float(~loc, number /. 100.0)
-      | `Extended_percentage(pct) => render_extended_percentage(~loc, pct),
+    render_alpha_value,
   );
 
 // css-images-4
@@ -4178,12 +4180,21 @@ let mask_image =
 
 let render_paint = (~loc, value: Types.paint) => {
   switch (value) {
-  | `Color(c) => render_color(~loc, c)
-  | `Interpolation(variable) => render_variable(~loc, variable)
   | `Context_stroke => [%expr `contextStroke]
   | `Context_fill => [%expr `contextFill]
-  | `Static(_, _)
-  | _ => raise(Unsupported_feature)
+  | `None => [%expr `none]
+  | `Color(c) => render_color(~loc, c)
+  | `Static(url, color) =>
+    switch (color) {
+    | Some(color) =>
+      let fallback =
+        switch (color) {
+        | `None => variant_to_expression(~loc, `None)
+        | `Color(color) => render_color(~loc, color)
+        };
+      [%expr `urlWithFallback(([%e render_string(~loc, url)], [%e fallback]))];
+    | None => [%expr [%e render_url(~loc, url)]]
+    }
   };
 };
 
@@ -4200,13 +4211,6 @@ let stroke =
     (~loc) => [%expr CSS.SVG.stroke],
     render_paint,
   );
-
-let render_alpha_value = (~loc, value: Types.alpha_value) => {
-  switch (value) {
-  | `Number(n) => [%expr `num([%e render_float(~loc, n)])]
-  | `Extended_percentage(pct) => render_extended_percentage(~loc, pct)
-  };
-};
 
 let stroke_opacity =
   monomorphic(
@@ -4737,7 +4741,15 @@ let empty_cells = unsupportedProperty(Property_parser.property_empty_cells);
 
 let fill_opacity = unsupportedProperty(Property_parser.property_fill_opacity);
 
-let fill_rule = unsupportedProperty(Property_parser.property_fill_rule);
+let fill_rule =
+  monomorphic(
+    Property_parser.property_fill_rule,
+    (~loc) => [%expr CSS.SVG.fillRule],
+    (~loc) =>
+      fun
+      | `Nonzero => [%expr `nonzero]
+      | `Evenodd => [%expr `evenodd],
+  );
 
 let hyphenate_character =
   unsupportedProperty(Property_parser.property_hyphenate_character);

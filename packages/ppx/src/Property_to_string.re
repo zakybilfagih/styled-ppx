@@ -187,13 +187,13 @@ and render_product = product => {
   | (calc_value, list_of_products) =>
     let first = render_calc_value(calc_value);
     let second = render_list_of_products(list_of_products);
-    [%expr "calc(" ++ [%e first] ++ " * " ++ [%e second] ++ ")"];
+    [%expr "calc(" ++ [%e first] ++ [%e second] ++ ")"];
   };
 }
 and render_product_op = op => {
   switch (op) {
-  | `Static_0((), calc_value) => render_calc_value(calc_value)
-  | `Static_1((), float) => render_number(float, "")
+  | `Static_0((), calc_value) => [%expr "* " ++ [%e render_calc_value(calc_value)]]
+  | `Static_1((), float) => [%expr "/ " ++ [%e render_number(float, "")]]
   };
 }
 and render_calc_value = calc_value => {
