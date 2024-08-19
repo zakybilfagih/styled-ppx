@@ -1189,7 +1189,7 @@ and property_hyphenate_limit_zone = [%value.rec
   "<extended-length> | <extended-percentage>"
 ]
 and property_image_orientation = [%value.rec
-  "'from-image' | <extended-angle> | [ <extended-angle> ]? 'flip'"
+  "'from-image' | 'none' | [ <extended-angle> || 'flip' ]"
 ]
 and property_image_rendering = [%value.rec
   "'auto' |'smooth' | 'high-quality' | 'crisp-edges' | 'pixelated'"

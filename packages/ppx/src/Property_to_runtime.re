@@ -1233,7 +1233,15 @@ let image_resolution =
   unsupportedProperty(Property_parser.property_image_resolution);
 
 let image_orientation =
-  unsupportedProperty(Property_parser.property_image_orientation);
+  monomorphic(
+    Property_parser.property_image_orientation,
+    (~loc) => [%expr CSS.imageOrientation],
+    (~loc) =>
+      fun
+      | `Or(_) => raise(Unsupported_feature)
+      | `None => [%expr `none]
+      | `From_image => [%expr `fromImage],
+  );
 
 let image_rendering =
   variants(Property_parser.property_image_rendering, (~loc) =>
@@ -3157,7 +3165,9 @@ let render_single_transition_no_interp =
      ~timingFunction=?[%e
        render_option(~loc, render_timing_no_interp, timingFunction)
      ],
-     ~property=?[%e render_option(~loc, render_transition_property, property)],
+     ~property=?[%e
+       render_option(~loc, render_transition_property, property)
+     ],
      (),
    )];
 };

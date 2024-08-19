@@ -68,6 +68,9 @@ let maskImage x = Rule.declaration ({js|maskImage|js}, MaskImage.toString x)
 let imageRendering x =
   Rule.declaration ({js|imageRendering|js}, ImageRendering.toString x)
 
+let imageOrientation x =
+  Rule.declaration ({js|imageOrientation|js}, ImageOrientation.toString x)
+
 let backgroundOrigin x =
   Rule.declaration ({js|backgroundOrigin|js}, BackgroundOrigin.toString x)
 
@@ -110,6 +113,54 @@ let maskPositions mp =
 (* https://developer.mozilla.org/en-US/docs/Web/CSS/border-image-source *)
 let borderImageSource x =
   Rule.declaration ({js|borderImageSource|js}, BorderImageSource.toString x)
+
+let borderImageSlice ?(fill = false) x =
+  let value =
+    match x with
+    | #NumberPercentage.t as x -> BorderImageSlice.make ~fill (`x x)
+    | #Cascading.t as x -> x
+    | #Var.t as x -> x
+  in
+  Rule.declaration ({js|borderImageSlice|js}, BorderImageSlice.toString value)
+
+let borderImageSlice2 ?(fill = false) ~v ~h () =
+  Rule.declaration
+    ( {js|borderImageSlice|js},
+      BorderImageSlice.toString (BorderImageSlice.make ~fill (`vh (v, h))) )
+
+let borderImageSlice3 ?(fill = false) ~top ~h ~bottom () =
+  Rule.declaration
+    ( {js|borderImageSlice|js},
+      BorderImageSlice.toString
+        (BorderImageSlice.make ~fill (`thb (top, h, bottom))) )
+
+let borderImageSlice4 ?(fill = false) ~top ~right ~bottom ~left () =
+  Rule.declaration
+    ( {js|borderImageSlice|js},
+      BorderImageSlice.toString
+        (BorderImageSlice.make ~fill (`trbl (top, right, bottom, left))) )
+
+let borderImageWidth x =
+  let value =
+    match x with
+    | #Cascading.t as x -> x
+    | #Var.t as x -> x
+    | #BorderImageWidth.value as x -> `x x
+  in
+  Rule.declaration ({js|borderImageWidth|js}, BorderImageWidth.toString value)
+
+let borderImageWidth2 ~v ~h =
+  Rule.declaration
+    ({js|borderImageWidth|js}, BorderImageWidth.toString (`vh (v, h)))
+
+let borderImageWidth3 ~top ~h ~bottom =
+  Rule.declaration
+    ({js|borderImageWidth|js}, BorderImageWidth.toString (`thb (top, h, bottom)))
+
+let borderImageWidth4 ~top ~right ~bottom ~left =
+  Rule.declaration
+    ( {js|borderImageWidth|js},
+      BorderImageWidth.toString (`trbl (top, right, bottom, left)) )
 
 let borderBottomColor x =
   Rule.declaration ({js|borderBottomColor|js}, Color.toString x)

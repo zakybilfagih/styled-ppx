@@ -144,10 +144,22 @@ end
 module Percentage = struct
   type t = [ `percent of float ]
 
-  let pct x = `percent x
+  let pct x : [> t ] = `percent x
 
   let toString x =
     match x with `percent x -> Kloth.Float.to_string x ^ {js|%|js}
+end
+
+module NumberPercentage = struct
+  type t =
+    [ `num of float
+    | Percentage.t
+    ]
+
+  let toString (x : t) =
+    match x with
+    | `num x -> Kloth.Float.to_string x
+    | #Percentage.t as x -> Percentage.toString x
 end
 
 module Url = struct
@@ -3351,10 +3363,156 @@ module BorderImageSource = struct
   type t =
     [ None.t
     | Image.t
+    | Var.t
+    | Cascading.t
     ]
 
   let toString x =
-    match x with #None.t -> None.toString | #Image.t as i -> Image.toString i
+    match x with
+    | #None.t -> None.toString
+    | #Image.t as i -> Image.toString i
+    | #Var.t as v -> Var.toString v
+    | #Cascading.t as v -> Cascading.toString v
+end
+
+module BorderImageSlice = struct
+  type value =
+    [ NumberPercentage.t
+    | Var.t
+    ]
+
+  let value_to_string x =
+    match x with
+    | #NumberPercentage.t as x -> NumberPercentage.toString x
+    | #Var.t as x -> Var.toString x
+
+  type values = {
+    sides :
+      [ `x of value
+      | `vh of value * value
+      | `thb of value * value * value
+      | `trbl of value * value * value * value
+      ];
+    fill : bool;
+  }
+
+  let values_to_string { sides; fill } =
+    let values =
+      match sides with
+      | `x x -> value_to_string x
+      | `vh (v, h) ->
+        Kloth.Array.map_and_join ~sep:{js| |js} ~f:value_to_string [| v; h |]
+      | `thb (t, h, b) ->
+        Kloth.Array.map_and_join ~sep:{js| |js} ~f:value_to_string [| t; h; b |]
+      | `trbl (t, r, b, l) ->
+        Kloth.Array.map_and_join ~sep:{js| |js} ~f:value_to_string
+          [| t; r; b; l |]
+    in
+    values ^ if fill then {js| fill|js} else {js||js}
+
+  type t =
+    [ `values of values
+    | Var.t
+    | Cascading.t
+    ]
+
+  let make ?(fill = false) sides : [> t ] = `values { sides; fill }
+
+  let toString (x : t) =
+    match x with
+    | `values v -> values_to_string v
+    | #Var.t as v -> Var.toString v
+    | #Cascading.t as v -> Cascading.toString v
+end
+
+module BorderImageWidth = struct
+  type value =
+    [ Length.t
+    | `num of float
+    | `auto
+    | Var.t
+    ]
+
+  let value_to_string x =
+    match x with
+    | `num x -> Kloth.Float.to_string x
+    | `auto -> {js|auto|js}
+    | #Length.t as x -> Length.toString x
+    | #Var.t as x -> Var.toString x
+
+  type values =
+    [ `x of value
+    | `vh of value * value
+    | `thb of value * value * value
+    | `trbl of value * value * value * value
+    ]
+
+  let values_to_string x =
+    match x with
+    | `x x -> value_to_string x
+    | `vh (v, h) ->
+      Kloth.Array.map_and_join ~sep:{js| |js} ~f:value_to_string [| v; h |]
+    | `thb (t, h, b) ->
+      Kloth.Array.map_and_join ~sep:{js| |js} ~f:value_to_string [| t; h; b |]
+    | `trbl (t, r, b, l) ->
+      Kloth.Array.map_and_join ~sep:{js| |js} ~f:value_to_string
+        [| t; r; b; l |]
+
+  type t =
+    [ values
+    | Var.t
+    | Cascading.t
+    ]
+
+  let toString (x : t) =
+    match x with
+    | #values as x -> values_to_string x
+    | #Var.t as v -> Var.toString v
+    | #Cascading.t as v -> Cascading.toString v
+end
+
+module BorderImageOutset = struct
+  type value =
+    [ Length.t
+    | `num of float
+    | Var.t
+    ]
+
+  let value_to_string x =
+    match x with
+    | `num x -> Kloth.Float.to_string x
+    | #Length.t as x -> Length.toString x
+    | #Var.t as x -> Var.toString x
+
+  type values =
+    [ `x of value
+    | `vh of value * value
+    | `thb of value * value * value
+    | `trbl of value * value * value * value
+    ]
+
+  let values_to_string x =
+    match x with
+    | `x x -> value_to_string x
+    | `vh (v, h) ->
+      Kloth.Array.map_and_join ~sep:{js| |js} ~f:value_to_string [| v; h |]
+    | `thb (t, h, b) ->
+      Kloth.Array.map_and_join ~sep:{js| |js} ~f:value_to_string [| t; h; b |]
+    | `trbl (t, r, b, l) ->
+      Kloth.Array.map_and_join ~sep:{js| |js} ~f:value_to_string
+        [| t; r; b; l |]
+
+  type t =
+    [ values
+    | Var.t
+    | Cascading.t
+    ]
+
+  let toString (x : t) =
+    match x with
+    | #values as x -> values_to_string x
+    | #Var.t as v -> Var.toString v
+    | #Cascading.t as v -> Cascading.toString v
 end
 
 module MaskImage = struct
@@ -3384,6 +3542,21 @@ module ImageRendering = struct
     | `highQuality -> {js|high-quality|js}
     | `pixelated -> {js|pixelated|js}
     | `crispEdges -> {js|crisp-edges|js}
+    | #Var.t as va -> Var.toString va
+    | #Cascading.t as c -> Cascading.toString c
+end
+
+module ImageOrientation = struct
+  type t =
+    [ None.t
+    | `fromImage
+    | Var.t
+    | Cascading.t
+    ]
+
+  let toString = function
+    | `fromImage -> {js|from-image|js}
+    | #None.t -> None.toString
     | #Var.t as va -> Var.toString va
     | #Cascading.t as c -> Cascading.toString c
 end
