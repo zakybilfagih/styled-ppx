@@ -104,7 +104,7 @@ and auto_track_list = [%value.rec
 ]
 and baseline_position = [%value.rec "[ 'first' | 'last' ]? 'baseline'"]
 and basic_shape = [%value.rec
-  "<inset()> | <circle()> | <ellipse()> | <polygon()> | <path()>"
+  "<inset()> | <circle()> | <ellipse()> | <polygon()> | <path-basic-shape()>"
 ]
 and bg_image = [%value.rec "'none' | <image>"]
 and bg_layer = [%value.rec
@@ -350,6 +350,7 @@ and function_opacity = [%value.rec "opacity( <number-percentage> )"]
 and function_paint = [%value.rec
   "paint( <ident> ',' [ <declaration-value> ]? )"
 ]
+and function_path_basic_shape = [%value.rec "path( [ <fill-rule> ',' ]? <string> )"]
 and function_path = [%value.rec "path( <string> )"]
 and function_perspective = [%value.rec "perspective( <property-perspective> )"]
 and function_polygon = [%value.rec

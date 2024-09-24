@@ -811,13 +811,16 @@ module SVG = struct
   let stroke x = Rule.declaration ({js|stroke|js}, Color.toString x)
 
   let strokeDasharray x =
+    Rule.declaration ({js|strokeDasharray|js}, StrokeDasharray.toString x)
+
+  let strokeDasharrays x =
     Rule.declaration
       ( {js|strokeDasharray|js},
-        match x with
-        | `none -> {js|none|js}
-        | `dasharray a ->
-          Kloth.Array.map_and_join a ~f:StrokeDashArray.toString ~sep:{js| |js}
+        Kloth.Array.map_and_join ~f:StrokeDasharray.toString ~sep:{js| |js} x
       )
+
+  let strokeDashoffset x =
+    Rule.declaration ({js|strokeDashoffset|js}, StrokeDashoffset.toString x)
 
   (* ??? *)
   let strokeWidth x = Rule.declaration ({js|strokeWidth|js}, Length.toString x)

@@ -562,7 +562,29 @@ module Gap = struct
     | #Cascading.t as c -> Cascading.toString c
 end
 
-module StrokeDashArray = struct
+module StrokeDasharray = struct
+  module Value = struct
+    type t = [ | Length.t ]
+
+    let toString (x : t) = match x with #Length.t as l -> Length.toString l
+  end
+
+  type t =
+    [ None.t
+    | Value.t
+    | Var.t
+    | Cascading.t
+    ]
+
+  let toString x =
+    match x with
+    | #None.t -> None.toString
+    | #Length.t as l -> Length.toString l
+    | #Var.t as va -> Var.toString va
+    | #Cascading.t as c -> Cascading.toString c
+end
+
+module StrokeDashoffset = struct
   type t =
     [ Length.t
     | Var.t
