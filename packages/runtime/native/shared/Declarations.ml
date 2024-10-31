@@ -801,23 +801,22 @@ module SVG = struct
     Rule.declaration ({js|fillOpacity|js}, Kloth.Float.to_string opacity)
 
   (* ??? *)
-  let fillRule x =
-    Rule.declaration
-      ( {js|fillRule|js},
-        match x with `evenodd -> {js|evenodd|js} | `nonzero -> {js|nonzero|js}
-      )
+  let fillRule x = Rule.declaration ({js|fillRule|js}, FillRule.toString x)
+  let clipRule x = Rule.declaration ({js|clipRule|js}, ClipRule.toString x)
 
   (* ??? *)
   let stroke x = Rule.declaration ({js|stroke|js}, Color.toString x)
 
   let strokeDasharray x =
+    Rule.declaration ({js|strokeDasharray|js}, StrokeDasharray.toString x)
+
+  let strokeDasharrays x =
     Rule.declaration
       ( {js|strokeDasharray|js},
-        match x with
-        | `none -> {js|none|js}
-        | `dasharray a ->
-          Kloth.Array.map_and_join a ~f:StrokeDashArray.toString ~sep:{js| |js}
-      )
+        Kloth.Array.map_and_join ~f:StrokeDasharray.toString ~sep:{js| |js} x )
+
+  let strokeDashoffset x =
+    Rule.declaration ({js|strokeDashoffset|js}, StrokeDashoffset.toString x)
 
   (* ??? *)
   let strokeWidth x = Rule.declaration ({js|strokeWidth|js}, Length.toString x)
@@ -851,6 +850,14 @@ module SVG = struct
   let stopOpacity x =
     (* ??? *)
     Rule.declaration ({js|stopOpacity|js}, Kloth.Float.to_string x)
+
+  let alignmentBaseline x =
+    Rule.declaration ({js|alignmentBaseline|js}, AlignmentBaseline.toString x)
+
+  let dominantBaseline x =
+    Rule.declaration ({js|dominantBaseline|js}, DominantBaseline.toString x)
+
+  let textAnchor x = Rule.declaration ({js|textAnchor|js}, TextAnchor.toString x)
 end
 
 let touchAction x =

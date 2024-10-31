@@ -4407,6 +4407,12 @@ let backdrop_filter =
       },
   );
 
+let render_svg_length = (~loc) =>
+  fun
+  | `Extended_length(x) => render_extended_length(~loc, x)
+  | `Extended_percentage(x) => render_extended_percentage(~loc, x)
+  | `Number(x) => render_length(~loc, `Px(x));
+
 let float = unsupportedProperty(Property_parser.property_float);
 
 let font_language_override =
@@ -4483,7 +4489,29 @@ let scrollbar_width =
   unsupportedProperty(Property_parser.property_scrollbar_width);
 
 let stroke_dasharray =
-  unsupportedProperty(Property_parser.property_stroke_dasharray);
+  polymorphic(Property_parser.property_stroke_dasharray, (~loc) =>
+    fun
+    | `None => [[%expr CSS.SVG.strokeDasharray(`none)]]
+    | `Svg_length(nestedLength) => [
+        [%expr
+          CSS.SVG.strokeDasharrays(
+            [%e
+              nestedLength
+              |> List.flatten
+              |> List.map(render_svg_length(~loc))
+              |> Builder.pexp_array(~loc)
+            ],
+          )
+        ],
+      ]
+  );
+
+let stroke_dashoffset =
+  monomorphic(
+    Property_parser.property_stroke_dashoffset,
+    (~loc) => [%expr CSS.SVG.strokeDashoffset],
+    render_svg_length,
+  );
 
 let stroke_linecap =
   unsupportedProperty(Property_parser.property_stroke_linecap);
@@ -5266,6 +5294,7 @@ let properties = [
   ("stroke-opacity", found(stroke_opacity)),
   ("stroke-width", found(stroke_width)),
   ("stroke-dasharray", found(stroke_dasharray)),
+  ("stroke-dashoffset", found(stroke_dashoffset)),
   ("stroke-linecap", found(stroke_linecap)),
   ("stroke-linejoin", found(stroke_linejoin)),
   ("stroke-miterlimit", found(stroke_miterlimit)),

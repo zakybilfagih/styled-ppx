@@ -104,7 +104,7 @@ and auto_track_list = [%value.rec
 ]
 and baseline_position = [%value.rec "[ 'first' | 'last' ]? 'baseline'"]
 and basic_shape = [%value.rec
-  "<inset()> | <circle()> | <ellipse()> | <polygon()> | <path()>"
+  "<inset()> | <circle()> | <ellipse()> | <polygon()> | <path-basic-shape()>"
 ]
 and bg_image = [%value.rec "'none' | <image>"]
 and bg_layer = [%value.rec
@@ -349,6 +349,9 @@ and function_minmax = [%value.rec
 and function_opacity = [%value.rec "opacity( <number-percentage> )"]
 and function_paint = [%value.rec
   "paint( <ident> ',' [ <declaration-value> ]? )"
+]
+and function_path_basic_shape = [%value.rec
+  "path( [ <fill-rule> ',' ]? <string> )"
 ]
 and function_path = [%value.rec "path( <string> )"]
 and function_perspective = [%value.rec "perspective( <property-perspective> )"]
@@ -815,7 +818,7 @@ and property_align_self = [%value.rec
   "'auto' | 'normal' | 'stretch' | <baseline-position> | [ <overflow-position> ]? <self-position> | <interpolation>"
 ]
 and property_alignment_baseline = [%value.rec
-  "'auto' | 'baseline' | 'before-edge' | 'text-before-edge' | 'middle' | 'central' | 'after-edge' | 'text-after-edge' | 'ideographic' | 'alphabetic' | 'hanging' | 'mathematical'"
+  "'baseline' | 'text-bottom' | 'alphabetic' | 'ideographic' | 'middle' | 'central' | 'mathematical' | 'text-top' | 'text-before-edge' | 'text-after-edge'"
 ]
 and property_all = [%value.rec "'initial' | 'inherit' | 'unset' | 'revert'"]
 and property_animation = [%value.rec "[ <single-animation> ]#"]
@@ -865,7 +868,7 @@ and property_background_position_y = [%value.rec
 and property_background_repeat = [%value.rec "[ <repeat-style> ]#"]
 and property_background_size = [%value.rec "[ <bg-size> ]#"]
 and property_baseline_shift = [%value.rec
-  "'baseline' | 'sub' | 'super' | <svg-length>"
+  "'baseline' | 'sub' | 'super' | 'top' | 'center' | 'bottom' | <svg-length>"
 ]
 and property_behavior = [%value.rec "[ <url> ]+"]
 and property_block_overflow = [%value.rec "'clip' | 'ellipsis' | <string>"]
@@ -1057,7 +1060,7 @@ and property_display = [%value.rec
   "'block' | 'contents' | 'flex' | 'flow' | 'flow-root' | 'grid' | 'inline' | 'inline-block' | 'inline-flex' | 'inline-grid' | 'inline-list-item' | 'inline-table' | 'list-item' | 'none' | 'ruby' | 'ruby-base' | 'ruby-base-container' | 'ruby-text' | 'ruby-text-container' | 'run-in' | 'table' | 'table-caption' | 'table-cell' | 'table-column' | 'table-column-group' | 'table-footer-group' | 'table-header-group' | 'table-row' | 'table-row-group' | '-ms-flexbox' | '-ms-inline-flexbox' | '-ms-grid' | '-ms-inline-grid' | '-webkit-flex' | '-webkit-inline-flex' | '-webkit-box' | '-webkit-inline-box' | '-moz-inline-stack' | '-moz-box' | '-moz-inline-box'"
 ]
 and property_dominant_baseline = [%value.rec
-  "'auto' | 'use-script' | 'no-change' | 'reset-size' | 'ideographic' | 'alphabetic' | 'hanging' | 'mathematical' | 'central' | 'middle' | 'text-after-edge' | 'text-before-edge'"
+  "'auto' | 'use-script' | 'no-change' | 'reset-size' | 'ideographic' | 'alphabetic' | 'hanging' | 'mathematical' | 'central' | 'middle' | 'text-after-edge' | 'text-before-edge' | 'text-top' | 'text-bottom'"
 ]
 and property_empty_cells = [%value.rec "'show' | 'hide'"]
 and property_fill = [%value.rec "<paint>"]
@@ -1222,7 +1225,6 @@ and property_justify_items = [%value.rec
 and property_justify_self = [%value.rec
   "'auto' | 'normal' | 'stretch' | <baseline-position> | [ <overflow-position> ]? [ <self-position> | 'left' | 'right' ]"
 ]
-and property_kerning = [%value.rec "'auto' | <svg-length>"]
 and property_layout_grid = [%value.rec
   "'auto' | <custom-ident> | <integer> && [ <custom-ident> ]?"
 ]
@@ -2999,7 +3001,6 @@ let check_map =
       ("property-justify-content", check(property_justify_content)),
       ("property-justify-items", check(property_justify_items)),
       ("property-justify-self", check(property_justify_self)),
-      ("property-kerning", check(property_kerning)),
       ("property-left", check(property_left)),
       ("property-letter-spacing", check(property_letter_spacing)),
       ("property-line-break", check(property_line_break)),

@@ -562,7 +562,29 @@ module Gap = struct
     | #Cascading.t as c -> Cascading.toString c
 end
 
-module StrokeDashArray = struct
+module StrokeDasharray = struct
+  module Value = struct
+    type t = [ | Length.t ]
+
+    let toString (x : t) = match x with #Length.t as l -> Length.toString l
+  end
+
+  type t =
+    [ None.t
+    | Value.t
+    | Var.t
+    | Cascading.t
+    ]
+
+  let toString x =
+    match x with
+    | #None.t -> None.toString
+    | #Length.t as l -> Length.toString l
+    | #Var.t as va -> Var.toString va
+    | #Cascading.t as c -> Cascading.toString c
+end
+
+module StrokeDashoffset = struct
   type t =
     [ Length.t
     | Var.t
@@ -4244,3 +4266,113 @@ module GridTemplateRows = struct
 end
 
 module GridTemplateColumns = GridTemplateRows
+
+module AlignmentBaseline = struct
+  type t =
+    [ `baseline
+    | `textBottom
+    | `alphabetic
+    | `ideographic
+    | `middle
+    | `central
+    | `mathematical
+    | `textTop
+    | `textBeforeEdge
+    | `textAfterEdge
+    | Var.t
+    | Cascading.t
+    ]
+
+  let toString (x : t) =
+    match x with
+    | `baseline -> {js|baseline|js}
+    | `textBottom -> {js|text-bottom|js}
+    | `alphabetic -> {js|alphabetic|js}
+    | `ideographic -> {js|ideographic|js}
+    | `middle -> {js|middle|js}
+    | `central -> {js|central|js}
+    | `mathematical -> {js|mathematical|js}
+    | `textTop -> {js|text-top|js}
+    | `textBeforeEdge -> {js|text-before-edge|js}
+    | `textAfterEdge -> {js|text-after-edge|js}
+    | #Var.t as va -> Var.toString va
+    | #Cascading.t as c -> Cascading.toString c
+end
+
+module DominantBaseline = struct
+  type t =
+    [ Auto.t
+    | `useScript
+    | `noChange
+    | `resetSize
+    | `ideographic
+    | `alphabetic
+    | `hanging
+    | `mathematical
+    | `central
+    | `middle
+    | `textAfterEdge
+    | `textBeforeEdge
+    | `textTop
+    | `textBottom
+    | Var.t
+    | Cascading.t
+    ]
+
+  let toString (x : t) =
+    match x with
+    | #Auto.t -> Auto.toString
+    | `useScript -> {js|use-script|js}
+    | `noChange -> {js|no-change|js}
+    | `resetSize -> {js|reset-size|js}
+    | `ideographic -> {js|ideographic|js}
+    | `alphabetic -> {js|alphabetic|js}
+    | `hanging -> {js|hanging|js}
+    | `mathematical -> {js|mathematical|js}
+    | `central -> {js|central|js}
+    | `middle -> {js|middle|js}
+    | `textAfterEdge -> {js|text-after-edge|js}
+    | `textBeforeEdge -> {js|text-before-edge|js}
+    | `textTop -> {js|text-top|js}
+    | `textBottom -> {js|text-bottom|js}
+    | #Var.t as va -> Var.toString va
+    | #Cascading.t as c -> Cascading.toString c
+end
+
+module TextAnchor = struct
+  type t =
+    [ `start
+    | `middle
+    | `end_
+    | Var.t
+    | Cascading.t
+    ]
+
+  let toString (x : t) =
+    match x with
+    | `start -> {js|start|js}
+    | `middle -> {js|middle|js}
+    | `end_ -> {js|end|js}
+    | #Var.t as va -> Var.toString va
+    | #Cascading.t as c -> Cascading.toString c
+end
+
+module FillRule = struct
+  type t =
+    [ `nonzero
+    | `evenodd
+    | Var.t
+    | Cascading.t
+    ]
+
+  let toString (x : t) =
+    match x with
+    | `nonzero -> {js|nonzero|js}
+    | `evenodd -> {js|evenodd|js}
+    | #Var.t as va -> Var.toString va
+    | #Cascading.t as c -> Cascading.toString c
+end
+
+module ClipRule = struct
+  include FillRule
+end
